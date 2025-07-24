@@ -31,4 +31,12 @@ public interface DevoteeRepository extends JpaRepository<Devotee, Long> {
     long countByNamhattaId(Long namhattaId);
     
     long countByDevotionalStatusId(Long statusId);
+    
+    /**
+     * Get devotee count by devotional status for dashboard analytics
+     */
+    @Query("SELECT ds.name, COUNT(d) FROM Devotee d " +
+           "LEFT JOIN d.devotionalStatus ds " +
+           "GROUP BY ds.name")
+    List<Object[]> findDevoteeCountByStatus();
 }

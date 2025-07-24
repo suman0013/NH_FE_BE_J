@@ -4,6 +4,7 @@
 /home/runner/workspace/src/main/java/com/namhatta/controller/AuthController.java
 /home/runner/workspace/src/main/java/com/namhatta/service/DevotionalStatusService.java
 /home/runner/workspace/src/main/java/com/namhatta/entity/Devotee.java
+/home/runner/workspace/src/main/java/com/namhatta/controller/DashboardController.java
 /home/runner/workspace/src/main/java/com/namhatta/security/JwtTokenProvider.java
 /home/runner/workspace/src/main/java/com/namhatta/dto/AuthDTO.java
 /home/runner/workspace/src/main/java/com/namhatta/controller/DevoteeController.java
@@ -31,12 +32,13 @@
 /home/runner/workspace/src/main/java/com/namhatta/entity/UserSession.java
 /home/runner/workspace/src/main/java/com/namhatta/controller/GeographyController.java
 /home/runner/workspace/src/main/java/com/namhatta/controller/EntityTestController.java
+/home/runner/workspace/src/main/java/com/namhatta/service/DashboardService.java
 /home/runner/workspace/src/main/java/com/namhatta/entity/Namhatta.java
 /home/runner/workspace/src/main/java/com/namhatta/entity/Address.java
 /home/runner/workspace/src/main/java/com/namhatta/dto/DevoteeDTO.java
 /home/runner/workspace/src/main/java/com/namhatta/service/NamhattaService.java
 /home/runner/workspace/src/main/java/com/namhatta/dto/ApiResponse.java
-/home/runner/workspace/src/main/java/com/namhatta/controller/NamhattaController.java
 /home/runner/workspace/src/main/java/com/namhatta/controller/GeographyTestController.java
+/home/runner/workspace/src/main/java/com/namhatta/controller/NamhattaController.java
 /home/runner/workspace/src/main/java/com/namhatta/dto/DevotionalStatusDTO.java
 /home/runner/workspace/src/main/java/com/namhatta/repository/UserRepository.java
