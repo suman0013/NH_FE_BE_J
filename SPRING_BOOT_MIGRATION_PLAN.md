@@ -11,6 +11,17 @@ This document provides a detailed, granular task-based migration plan to move th
 3. **Validation**: Each task has specific validation criteria that must be met before marking complete
 4. **Self-Contained**: Each task contains all necessary code, dependencies, and configuration details
 5. **Rollback Safety**: Test each phase thoroughly before proceeding to the next
+6. **API Compliance**: Strictly follow the OpenAPI specification (api-specification.yaml) for all DTOs and endpoints
+
+## API Specification Reference
+**File**: `api-specification.yaml` contains complete OpenAPI 3.0.3 specification with:
+- All endpoint definitions with exact parameters, request/response schemas
+- Complete DTO definitions for Devotee, Namhatta, Address, etc.
+- Authentication flow and security requirements
+- Validation rules and error responses
+- Pagination and filtering structures
+
+**CRITICAL**: All Spring Boot DTOs must match the OpenAPI schemas exactly to ensure 100% API compatibility.
 
 ## Migration Progress Tracker
 
@@ -24,25 +35,26 @@ This document provides a detailed, granular task-based migration plan to move th
 - Task 2.2: Create Address & Junction Tables - ☐ Not Started
 - Task 2.3: Create Repository Interfaces - ☐ Not Started
 
-### Phase 3: Security & Authentication System
-- Task 3.1: Spring Security Configuration - ☐ Not Started
-- Task 3.2: JWT Token Provider & Filters - ☐ Not Started
-- Task 3.3: User Details Service & Password Encoding - ☐ Not Started
+### Phase 3: Data Transfer Objects & Validation
+- Task 3.1: Create Request/Response DTOs - ☐ Not Started
+- Task 3.2: Input Validation & Bean Validation - ☐ Not Started
+- Task 3.3: Error Response Standardization - ☐ Not Started
 
-### Phase 4: Service Layer Implementation
-- Task 4.1: Core Business Services - ☐ Not Started
-- Task 4.2: Geographic Service Implementation - ☐ Not Started
-- Task 4.3: Dashboard & Statistics Services - ☐ Not Started
+### Phase 4: Security & Authentication System
+- Task 4.1: Spring Security Configuration - ☐ Not Started
+- Task 4.2: JWT Token Provider & Filters - ☐ Not Started
+- Task 4.3: User Details Service & Password Encoding - ☐ Not Started
 
-### Phase 5: REST Controllers & API Layer
-- Task 5.1: Authentication Controller - ☐ Not Started
-- Task 5.2: Devotee Controller - ☐ Not Started
-- Task 5.3: Namhatta Controller - ☐ Not Started
-- Task 5.4: Geographic & Dashboard Controllers - ☐ Not Started
+### Phase 5: Service Layer Implementation
+- Task 5.1: Core Business Services - ☐ Not Started
+- Task 5.2: Geographic Service Implementation - ☐ Not Started
+- Task 5.3: Dashboard & Statistics Services - ☐ Not Started
 
-### Phase 6: Data Transfer Objects & Validation
-- Task 6.1: Create Request/Response DTOs - ☐ Not Started
-- Task 6.2: Input Validation & Error Handling - ☐ Not Started
+### Phase 6: REST Controllers & API Layer
+- Task 6.1: Authentication Controller - ☐ Not Started
+- Task 6.2: Devotee Controller - ☐ Not Started
+- Task 6.3: Namhatta Controller - ☐ Not Started
+- Task 6.4: Geographic & Dashboard Controllers - ☐ Not Started
 
 ### Phase 7: API Testing & Compatibility
 - Task 7.1: Create Test Endpoints - ☐ Not Started
@@ -55,6 +67,8 @@ This document provides a detailed, granular task-based migration plan to move th
 - Task 8.3: Final Migration Validation - ☐ Not Started
 
 **Total Progress**: 0/24 tasks completed (0%)
+
+
 
 ## Why Spring Boot Migration?
 
@@ -771,12 +785,162 @@ public interface NamhattaRepository extends JpaRepository<Namhatta, Long> {
 
 ---
 
-## Phase 3: Security & Authentication System
+## Phase 3: Data Transfer Objects & Validation
 
-### Task 3.1: Spring Security Configuration
+### Task 3.1: Create Request/Response DTOs
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 3 hours
+**Prerequisites**: Task 2.3 completed
+**Agent Instructions**: Create all DTOs that exactly match the OpenAPI specification schemas. This is CRITICAL for API compatibility.
+
+**Sub-tasks:**
+- [ ] Create `LoginRequest.java` and `LoginResponse.java` DTOs
+- [ ] Create `DevoteeDto.java` with all fields from OpenAPI schema
+- [ ] Create `NamhattaDto.java` with all fields from OpenAPI schema
+- [ ] Create `AddressDto.java` for normalized address handling
+- [ ] Create `DevotionalStatusDto.java` and `ShraddhakutirDto.java`
+- [ ] Create `PaginatedResponse.java` for consistent pagination
+- [ ] Create `DashboardSummaryDto.java` and `StatusDistributionDto.java`
+- [ ] Create `ErrorResponseDto.java` for standardized error handling
+- [ ] Test DTO serialization/deserialization
+
+**CRITICAL OpenAPI Compliance:**
+All DTOs must match `api-specification.yaml` schemas exactly. Key fields to verify:
+
+**DevoteeDto** must include:
+```java
+@JsonProperty("legalName") private String legalName;
+@JsonProperty("name") private String name;  
+@JsonProperty("dob") private LocalDate dob;
+@JsonProperty("devotionalStatusId") private Long devotionalStatusId;
+@JsonProperty("namhattaId") private Long namhattaId;
+@JsonProperty("presentAddress") private AddressDto presentAddress;
+@JsonProperty("permanentAddress") private AddressDto permanentAddress;
+@JsonProperty("devotionalCourses") private List<DevotionalCourseDto> devotionalCourses;
+// ... all other fields from OpenAPI schema
+```
+
+**NamhattaDto** must include:
+```java
+@JsonProperty("name") private String name;
+@JsonProperty("code") private String code;
+@JsonProperty("secretary") private String secretary;
+@JsonProperty("status") private String status; // PENDING_APPROVAL, APPROVED, REJECTED
+@JsonProperty("nagarKirtan") private Integer nagarKirtan; // 0 or 1
+@JsonProperty("address") private AddressDto address;
+@JsonProperty("devoteeCount") private Integer devoteeCount;
+// ... all other fields from OpenAPI schema
+```
+
+**Validation Criteria:**
+- [ ] All DTOs compile without errors
+- [ ] JSON serialization produces exact format as Node.js API
+- [ ] Field names match OpenAPI specification exactly (camelCase)
+- [ ] Date fields use proper format (LocalDate, LocalDateTime)
+- [ ] Enum values match exactly (ADMIN, OFFICE, DISTRICT_SUPERVISOR)
+- [ ] Boolean fields represented as Integer (0/1) where specified
+- [ ] Pagination response structure matches exactly
+
+**Success Indicators:**
+- DTO JSON output matches Node.js API responses exactly
+- All required fields present and correctly typed
+- Optional fields handled properly (nullable annotations)
+- Validation annotations applied correctly
+
+---
+
+### Task 3.2: Input Validation & Bean Validation
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 2 hours
+**Prerequisites**: Task 3.1 completed
+**Agent Instructions**: Implement comprehensive input validation using Bean Validation (JSR-303) to match Node.js validation logic
+
+**Sub-tasks:**
+- [ ] Add validation annotations to all DTOs
+- [ ] Create custom validators for business rules
+- [ ] Configure validation error handling
+- [ ] Test validation with various input scenarios
+
+**Key Validation Rules from Node.js:**
+```java
+// DevoteeDto validation
+@NotBlank(message = "Legal name is required")
+@Size(max = 255, message = "Legal name too long")
+private String legalName;
+
+@NotNull(message = "Date of birth is required")
+private LocalDate dob;
+
+@Email(message = "Invalid email format")
+private String email;
+
+@Pattern(regexp = "^[+]?[0-9\\-\\s()]+$", message = "Invalid phone format")
+private String phone;
+
+@NotNull(message = "Present address is required")
+@Valid
+private AddressDto presentAddress;
+
+// NamhattaDto validation
+@NotBlank(message = "Namhatta name is required")
+private String name;
+
+@NotBlank(message = "Secretary is required")
+private String secretary;
+
+@Pattern(regexp = "^[A-Z0-9]{3,10}$", message = "Invalid namhatta code format")
+private String code;
+```
+
+**Validation Criteria:**
+- [ ] Required fields validated properly
+- [ ] Email format validation works
+- [ ] Phone number validation matches Node.js regex
+- [ ] Address validation cascades to nested objects
+- [ ] Error messages match Node.js responses exactly
+
+---
+
+### Task 3.3: Error Response Standardization
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 1.5 hours
+**Prerequisites**: Task 3.2 completed
+**Agent Instructions**: Create standardized error response handling that matches Node.js error format exactly
+
+**Sub-tasks:**
+- [ ] Create `GlobalExceptionHandler.java` with @ControllerAdvice
+- [ ] Handle validation errors (400 Bad Request)
+- [ ] Handle authentication errors (401 Unauthorized)
+- [ ] Handle authorization errors (403 Forbidden)
+- [ ] Handle entity not found errors (404 Not Found)
+- [ ] Handle duplicate entity errors (409 Conflict)
+- [ ] Test all error scenarios match Node.js responses
+
+**Error Response Format (must match exactly):**
+```java
+@Data
+@Builder
+public class ErrorResponseDto {
+    private String error;
+    private String message;
+    private List<String> details; // For validation errors
+}
+```
+
+**Validation Criteria:**
+- [ ] Error responses match Node.js format exactly
+- [ ] HTTP status codes match Node.js responses
+- [ ] Validation error messages identical to Node.js
+- [ ] Authentication error format matches exactly
+
+---
+
+## Phase 4: Security & Authentication System
+
+### Task 4.1: Spring Security Configuration
 **Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
 **Estimated Time**: 2.5 hours
-**Prerequisites**: Task 2.3 completed
+**Prerequisites**: Task 3.3 completed
 **Agent Instructions**: Configure Spring Security to exactly match the current Node.js authentication system with JWT tokens, HTTP-only cookies, and role-based access control
 
 **Sub-tasks:**
@@ -1212,12 +1376,12 @@ public class AuthService {
 
 ---
 
-## Phase 4: Service Layer Implementation
+## Phase 5: Service Layer Implementation
 
-### Task 4.1: Core Business Services
+### Task 5.1: Core Business Services
 **Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
-**Estimated Time**: 3 hours
-**Prerequisites**: Task 3.3 completed
+**Estimated Time**: 4 hours
+**Prerequisites**: Task 4.3 completed
 **Agent Instructions**: Implement business logic services that exactly match the current Node.js functionality including district filtering and data access patterns
 
 **Sub-tasks:**
@@ -1436,10 +1600,10 @@ public class GeographicService {
 }
 ```
 
-### Task 4.2: Geographic Service Implementation
+### Task 5.2: Geographic Service Implementation
 **Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
 **Estimated Time**: 2 hours
-**Prerequisites**: Task 4.1 completed
+**Prerequisites**: Task 5.1 completed
 **Agent Instructions**: Implement geographic services that exactly match Node.js API behavior for location lookups and pincode search
 
 **Validation Criteria:**
@@ -1451,10 +1615,10 @@ public class GeographicService {
 
 ---
 
-### Task 4.3: Dashboard & Statistics Services
+### Task 5.3: Dashboard & Statistics Services
 **Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
 **Estimated Time**: 1.5 hours
-**Prerequisites**: Task 4.2 completed
+**Prerequisites**: Task 5.2 completed
 **Agent Instructions**: Implement dashboard services for statistics and analytics exactly matching current Node.js implementation
 
 **Sub-tasks:**
@@ -1472,12 +1636,13 @@ public class GeographicService {
 
 ---
 
-## Phase 5: REST Controllers & API Layer
+## Phase 6: REST Controllers & API Layer
 
-### Task 5.1: Authentication Controller
-**Status**: ☐ Not Started | ☐ In Progress | ☐ Completed
-
-**Purpose**: Convert all `/api/auth/*` endpoints from Express to Spring Boot
+### Task 6.1: Authentication Controller
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 2.5 hours
+**Prerequisites**: Task 5.3 completed
+**Agent Instructions**: Convert all `/api/auth/*` endpoints from Express to Spring Boot with exact API compliance
 
 **Sub-tasks:**
 - [ ] Create `AuthController.java` with login/logout endpoints
@@ -1633,8 +1798,11 @@ public class AuthController {
 
 ---
 
-### Task 5.2: Devotee Controller
-**Status**: ☐ Not Started | ☐ In Progress | ☐ Completed
+### Task 6.2: Devotee Controller
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 3 hours
+**Prerequisites**: Task 6.1 completed
+**Agent Instructions**: Implement all devotee-related endpoints with exact parameter and response matching
 
 **Sub-tasks:**
 - [ ] Create `DevoteeController.java` with all CRUD endpoints
@@ -1755,8 +1923,11 @@ public class DevoteeController {
 
 ---
 
-### Task 5.3: Namhatta Controller
-**Status**: ☐ Not Started | ☐ In Progress | ☐ Completed
+### Task 6.3: Namhatta Controller
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 3 hours
+**Prerequisites**: Task 6.2 completed
+**Agent Instructions**: Implement all namhatta-related endpoints with exact parameter and response matching
 
 **Sub-tasks:**
 - [ ] Create `NamhattaController.java` with all endpoints
@@ -1774,8 +1945,11 @@ public class DevoteeController {
 
 ---
 
-### Task 5.4: Geographic & Dashboard Controllers
+### Task 6.4: Geographic & Dashboard Controllers
 **Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 2 hours
+**Prerequisites**: Task 6.3 completed
+**Agent Instructions**: Implement remaining controllers for geography, dashboard, and other endpoints
 **Estimated Time**: 1.5 hours
 **Prerequisites**: Tasks 5.1, 5.2, 5.3 completed
 **Agent Instructions**: Create remaining controllers for geographic data and dashboard endpoints
