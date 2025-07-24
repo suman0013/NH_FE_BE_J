@@ -48,9 +48,8 @@ public class SecurityConfig {
                 .requestMatchers("/entity-test/**").permitAll()
                 .requestMatchers("/api/geography/**").permitAll()
                 .requestMatchers("/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/", "/index.html", "/static/**", "/assets/**").permitAll()
-                .requestMatchers("/*.js", "/*.css", "/*.ico", "/*.png", "/*.jpg", "/*.svg", "/*.map").permitAll()
-                .requestMatchers("/api/**").authenticated()
+                .requestMatchers("/", "/index.html", "/static/**", "/assets/**", "/favicon.ico").permitAll()
+                .requestMatchers("/*.js", "/*.css", "/*.ico", "/*.png", "/*.jpg", "/*.svg", "/*.map", "/*.json").permitAll()
                 .anyRequest().permitAll()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
