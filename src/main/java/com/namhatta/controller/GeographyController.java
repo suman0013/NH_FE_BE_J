@@ -18,7 +18,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("")
+@RequestMapping("/api/geography")
 @RequiredArgsConstructor
 public class GeographyController {
 
