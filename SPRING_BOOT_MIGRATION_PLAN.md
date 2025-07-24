@@ -1,7 +1,60 @@
-# Spring Boot Migration Plan for Namhatta Management System
+# Spring Boot Migration Plan for Namhatta Management System - Enhanced Version
 
 ## Overview
-This document provides a detailed, task-based migration plan to move the Namhatta Management System backend from Node.js/Express to Spring Boot while maintaining 100% functionality and API compatibility. The migration uses the **same PostgreSQL database** with no schema changes required.
+This document provides a detailed, granular task-based migration plan to move the Namhatta Management System backend from Node.js/Express to Spring Boot while maintaining 100% functionality and API compatibility. The migration uses the **same PostgreSQL database** with no schema changes required.
+
+**IMPORTANT FOR AGENTS**: This plan is designed for independent agent execution. Each task has specific status tracking, validation criteria, and detailed sub-tasks. When importing this project into a new Replit account, follow tasks sequentially and update status as you complete them.
+
+## How to Use This Plan
+1. **Sequential Execution**: Complete tasks in order from Phase 1 through Phase 8
+2. **Status Tracking**: Update task status from ☐ Not Started → ☐ In Progress → ☑ Completed 
+3. **Validation**: Each task has specific validation criteria that must be met before marking complete
+4. **Self-Contained**: Each task contains all necessary code, dependencies, and configuration details
+5. **Rollback Safety**: Test each phase thoroughly before proceeding to the next
+
+## Migration Progress Tracker
+
+### Phase 1: Project Setup & Infrastructure
+- Task 1.1: Create Replit Spring Boot Project - ☐ Not Started
+- Task 1.2: Configure Database Connection - ☐ Not Started  
+- Task 1.3: Set Up Replit Configuration - ☐ Not Started
+
+### Phase 2: Database Entities & JPA Mapping
+- Task 2.1: Create Core Entity Classes - ☐ Not Started
+- Task 2.2: Create Address & Junction Tables - ☐ Not Started
+- Task 2.3: Create Repository Interfaces - ☐ Not Started
+
+### Phase 3: Security & Authentication System
+- Task 3.1: Spring Security Configuration - ☐ Not Started
+- Task 3.2: JWT Token Provider & Filters - ☐ Not Started
+- Task 3.3: User Details Service & Password Encoding - ☐ Not Started
+
+### Phase 4: Service Layer Implementation
+- Task 4.1: Core Business Services - ☐ Not Started
+- Task 4.2: Geographic Service Implementation - ☐ Not Started
+- Task 4.3: Dashboard & Statistics Services - ☐ Not Started
+
+### Phase 5: REST Controllers & API Layer
+- Task 5.1: Authentication Controller - ☐ Not Started
+- Task 5.2: Devotee Controller - ☐ Not Started
+- Task 5.3: Namhatta Controller - ☐ Not Started
+- Task 5.4: Geographic & Dashboard Controllers - ☐ Not Started
+
+### Phase 6: Data Transfer Objects & Validation
+- Task 6.1: Create Request/Response DTOs - ☐ Not Started
+- Task 6.2: Input Validation & Error Handling - ☐ Not Started
+
+### Phase 7: API Testing & Compatibility
+- Task 7.1: Create Test Endpoints - ☐ Not Started
+- Task 7.2: API Response Format Validation - ☐ Not Started
+- Task 7.3: End-to-End API Testing - ☐ Not Started
+
+### Phase 8: Frontend Integration & Deployment
+- Task 8.1: Frontend API Configuration - ☐ Not Started
+- Task 8.2: Production Deployment Setup - ☐ Not Started
+- Task 8.3: Final Migration Validation - ☐ Not Started
+
+**Total Progress**: 0/24 tasks completed (0%)
 
 ## Why Spring Boot Migration?
 
@@ -61,7 +114,10 @@ All endpoints will maintain exact same behavior:
 ## Phase 1: Project Setup & Infrastructure
 
 ### Task 1.1: Create Replit Spring Boot Project
-**Status**: ☐ Not Started | ☐ In Progress | ☐ Completed
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 30 minutes
+**Prerequisites**: None
+**Agent Instructions**: Create a new Java Maven project in Replit with Spring Boot configuration
 
 **Sub-tasks:**
 - [ ] Create new Replit Java project named "namhatta-springboot"
@@ -154,17 +210,29 @@ src/main/resources/
 ```
 
 **Validation Criteria:**
-- [ ] Spring Boot application starts successfully
-- [ ] Can connect to existing PostgreSQL database using same connection string
-- [ ] Maven builds without errors
+- [ ] Spring Boot application starts successfully on port 5000
+- [ ] Maven builds without errors (`mvn clean compile`)
 - [ ] Replit workflow runs `mvn spring-boot:run` successfully
+- [ ] Basic health endpoint `/api/health` returns HTTP 200
+- [ ] Console shows "Started NamhattaApplication" without errors
+
+**Success Indicators:**
+- Console output: "Tomcat started on port(s): 5000 (http)"
+- No compilation errors in Maven output
+- Application context loads successfully
+
+**Common Issues & Solutions:**
+- Port conflict: Ensure no other service uses port 5000
+- Java version: Verify Replit uses Java 17 or higher
+- Maven repository issues: Check internet connectivity
 
 ---
 
-### Task 1.2: Configure Database Connection
-**Status**: ☐ Not Started | ☐ In Progress | ☐ Completed
-
-**Purpose**: Connect to your existing Neon PostgreSQL database using the same connection string
+### Task 1.2: Configure Database Connection  
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 45 minutes
+**Prerequisites**: Task 1.1 completed
+**Agent Instructions**: Configure Spring Boot to connect to existing Neon PostgreSQL database with same connection string as Node.js version
 
 **Sub-tasks:**
 - [ ] Create `application.yml` with database configuration
@@ -210,15 +278,56 @@ session:
 ```
 
 **Validation Criteria:**
-- [ ] Application connects to PostgreSQL successfully
-- [ ] Can query existing tables (devotees, namhattas, users)
-- [ ] Connection pool configured properly
-- [ ] Environment variables loaded correctly
+- [ ] Application connects to PostgreSQL successfully (no connection errors in console)
+- [ ] Can query existing tables: `SELECT COUNT(*) FROM devotees` returns actual count
+- [ ] Can query users table: `SELECT username FROM users LIMIT 1` returns existing users
+- [ ] Connection pool shows active connections in logs
+- [ ] Environment variables loaded: `${DATABASE_URL}` resolves correctly
+- [ ] JPA shows "Hibernate: SELECT" queries in console (when show-sql: true)
+
+**Success Indicators:**
+- Console shows: "HikariPool-1 - Start completed"
+- No "Connection refused" or "Database not found" errors
+- Can see actual devotee/namhatta count from database
+- Spring Data JPA initializes successfully
+
+**Database Connection Test:**
+Create a simple test endpoint to verify database connectivity:
+```java
+@RestController
+public class DatabaseTestController {
+    @Autowired
+    private DataSource dataSource;
+    
+    @GetMapping("/api/db-test")
+    public Map<String, Object> testConnection() {
+        try (Connection conn = dataSource.getConnection()) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("connected", true);
+            result.put("url", conn.getMetaData().getURL());
+            return result;
+        } catch (Exception e) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("connected", false);
+            result.put("error", e.getMessage());
+            return result;
+        }
+    }
+}
+```
+
+**Environment Variables Required:**
+- `DATABASE_URL`: postgresql://neondb_owner:***@ep-calm-silence-a15zko7l-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+- `JWT_SECRET`: Same as Node.js version
+- `SESSION_SECRET`: Same as Node.js version
 
 ---
 
 ### Task 1.3: Set Up Replit Configuration
-**Status**: ☐ Not Started | ☐ In Progress | ☐ Completed
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 20 minutes
+**Prerequisites**: Task 1.2 completed
+**Agent Instructions**: Configure Replit environment for Spring Boot with proper run commands and environment variables
 
 **Sub-tasks:**
 - [ ] Create `.replit` file for Java/Maven configuration
@@ -253,17 +362,39 @@ run = ["mvn", "clean", "package", "-DskipTests", "&&", "java", "-jar", "target/*
 - `SESSION_SECRET` - Same session secret from Node.js version
 
 **Validation Criteria:**
-- [ ] Spring Boot starts via `mvn spring-boot:run`
-- [ ] Application accessible on port 5000
-- [ ] Environment variables loaded from Replit Secrets
-- [ ] Hot reload works when editing Java files
+- [ ] Spring Boot starts via `mvn spring-boot:run` without errors
+- [ ] Application accessible on port 5000 (check webview shows content)
+- [ ] Environment variables loaded from Replit Secrets (test /api/db-test endpoint)
+- [ ] Hot reload works when editing Java files (Spring Boot DevTools active)
+- [ ] Console shows "LiveReload server is running on port 35729"
+
+**Success Indicators:**
+- Replit console shows Spring Boot banner and startup messages
+- Web preview shows Spring Boot application (not 404 error)
+- Environment variables resolved correctly in application.yml
+- File changes trigger automatic restart
+
+**Replit Secrets to Configure:**
+1. Go to Replit Secrets (lock icon in sidebar)
+2. Add these secrets:
+   - `DATABASE_URL`: Your Neon PostgreSQL connection string
+   - `JWT_SECRET`: Same value from Node.js .env file  
+   - `SESSION_SECRET`: Same value from Node.js .env file
+   - `PORT`: 5000
+
+**Testing Checklist:**
+- [ ] Click "Run" button starts Spring Boot successfully
+- [ ] Can access application via web preview
+- [ ] Environment variables appear in Spring Boot logs
+- [ ] Changes to Java files trigger restart
 
 ## Phase 2: Database Entities & JPA Mapping
 
 ### Task 2.1: Create Core Entity Classes
-**Status**: ☐ Not Started | ☐ In Progress | ☐ Completed
-
-**Purpose**: Map existing PostgreSQL tables to JPA entities without changing database schema
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 2 hours
+**Prerequisites**: Task 1.3 completed, database connection working
+**Agent Instructions**: Create JPA entity classes that map exactly to existing PostgreSQL tables. DO NOT modify database schema - only map existing structure.
 
 **Sub-tasks:**
 - [ ] Create `User.java` entity for authentication
@@ -404,15 +535,73 @@ public class Devotee {
 ```
 
 **Validation Criteria:**
-- [ ] All entities compile without errors
-- [ ] Can retrieve existing data from each table
-- [ ] Relationships work correctly (devotee -> namhatta, devotee -> status)
-- [ ] JSON fields (devotional_courses) map correctly
+- [ ] All entities compile without errors (`mvn clean compile` succeeds)
+- [ ] Can retrieve existing data: Create test endpoint to query each table
+- [ ] Relationships work correctly: devotee.getNamhatta() returns valid data
+- [ ] JSON fields (devotional_courses) serialize/deserialize correctly
+- [ ] Foreign key relationships preserved: devotee.getDevotionalStatus() works
+- [ ] Address relationships: devotee.getAddresses() returns junction table data
+
+**Entity Validation Test:**
+```java
+@RestController  
+@RequestMapping("/api/test")
+public class EntityTestController {
+    
+    @Autowired private DevoteeRepository devoteeRepository;
+    @Autowired private NamhattaRepository namhattaRepository;
+    @Autowired private UserRepository userRepository;
+    
+    @GetMapping("/entities")
+    public Map<String, Object> testEntities() {
+        Map<String, Object> result = new HashMap<>();
+        
+        // Test devotee entity
+        List<Devotee> devotees = devoteeRepository.findAll();
+        result.put("devotees_count", devotees.size());
+        if (!devotees.isEmpty()) {
+            Devotee first = devotees.get(0);
+            result.put("devotee_sample", Map.of(
+                "id", first.getId(),
+                "legalName", first.getLegalName(),
+                "namhatta", first.getNamhatta() != null ? first.getNamhatta().getName() : null,
+                "status", first.getDevotionalStatus() != null ? first.getDevotionalStatus().getName() : null,
+                "addresses_count", first.getAddresses().size()
+            ));
+        }
+        
+        // Test namhatta entity
+        List<Namhatta> namhattas = namhattaRepository.findAll();
+        result.put("namhattas_count", namhattas.size());
+        
+        // Test user entity  
+        List<User> users = userRepository.findAll();
+        result.put("users_count", users.size());
+        
+        return result;
+    }
+}
+```
+
+**Success Indicators:**
+- Test endpoint returns actual counts from database
+- Entity relationships return non-null objects
+- No LazyInitializationException when accessing relationships
+- JSON fields parse correctly (devotional_courses as List)
+
+**Critical Entity Fields to Verify:**
+- User: username, passwordHash, role, districts relationship
+- Devotee: legalName, devotionalStatus, namhatta, addresses
+- Namhatta: name, code, secretary, addresses
+- Address: all geographic fields match database columns exactly
 
 ---
 
 ### Task 2.2: Create Address & Junction Tables
-**Status**: ☐ Not Started | ☐ In Progress | ☐ Completed
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 1.5 hours
+**Prerequisites**: Task 2.1 completed
+**Agent Instructions**: Create address entities and junction tables that exactly match the existing normalized address structure in PostgreSQL
 
 **Sub-tasks:**
 - [ ] Create `Address.java` entity for normalized addresses
@@ -497,7 +686,10 @@ public class DevoteeAddress {
 ---
 
 ### Task 2.3: Create Repository Interfaces
-**Status**: ☐ Not Started | ☐ In Progress | ☐ Completed
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 2 hours
+**Prerequisites**: Task 2.2 completed
+**Agent Instructions**: Create Spring Data JPA repository interfaces with all the complex queries needed for district filtering, searching, and pagination
 
 **Sub-tasks:**
 - [ ] Create `UserRepository.java` with authentication queries
@@ -582,9 +774,10 @@ public interface NamhattaRepository extends JpaRepository<Namhatta, Long> {
 ## Phase 3: Security & Authentication System
 
 ### Task 3.1: Spring Security Configuration
-**Status**: ☐ Not Started | ☐ In Progress | ☐ Completed
-
-**Purpose**: Implement JWT-based authentication with HTTP-only cookies matching current Node.js system
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 2.5 hours
+**Prerequisites**: Task 2.3 completed
+**Agent Instructions**: Configure Spring Security to exactly match the current Node.js authentication system with JWT tokens, HTTP-only cookies, and role-based access control
 
 **Sub-tasks:**
 - [ ] Create `SecurityConfig.java` with authentication rules
@@ -976,8 +1169,56 @@ public class AuthService {
 
 ## Phase 4: Service Layer Implementation
 
+### Task 3.2: JWT Token Provider & Filters
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 2 hours
+**Prerequisites**: Task 3.1 completed
+**Agent Instructions**: Implement JWT token creation, validation, and filtering exactly matching the Node.js implementation
+
+**Sub-tasks:**
+- [ ] Create `JwtTokenProvider.java` for token creation/validation
+- [ ] Create `JwtAuthenticationFilter.java` for request filtering
+- [ ] Create `JwtAuthenticationEntryPoint.java` for error handling
+- [ ] Test JWT token generation and validation
+- [ ] Verify HTTP-only cookie handling
+
+**Validation Criteria:**
+- [ ] JWT tokens created with same payload structure as Node.js
+- [ ] Token validation works with existing JWT_SECRET
+- [ ] HTTP-only cookies set/read correctly
+- [ ] Authentication filter processes requests properly
+- [ ] Unauthorized requests return 401 with proper error format
+
+---
+
+### Task 3.3: User Details Service & Password Encoding
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 1 hour
+**Prerequisites**: Task 3.2 completed
+**Agent Instructions**: Implement user loading and password verification compatible with existing bcrypt hashes
+
+**Sub-tasks:**
+- [ ] Create `UserDetailsServiceImpl.java` for user loading
+- [ ] Configure BCryptPasswordEncoder with same rounds (12)
+- [ ] Create `CustomUserDetails.java` wrapper
+- [ ] Test login with existing users (admin, office1, supervisor1)
+- [ ] Verify district-based filtering works
+
+**Validation Criteria:**
+- [ ] Can load existing users from database
+- [ ] Password verification works with existing bcrypt hashes
+- [ ] User roles and districts loaded correctly
+- [ ] Spring Security authentication works end-to-end
+
+---
+
+## Phase 4: Service Layer Implementation
+
 ### Task 4.1: Core Business Services
-**Status**: ☐ Not Started | ☐ In Progress | ☐ Completed
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 3 hours
+**Prerequisites**: Task 3.3 completed
+**Agent Instructions**: Implement business logic services that exactly match the current Node.js functionality including district filtering and data access patterns
 
 **Sub-tasks:**
 - [ ] Create `DevoteeService.java` with all CRUD operations
@@ -1195,12 +1436,39 @@ public class GeographicService {
 }
 ```
 
+### Task 4.2: Geographic Service Implementation
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 2 hours
+**Prerequisites**: Task 4.1 completed
+**Agent Instructions**: Implement geographic services that exactly match Node.js API behavior for location lookups and pincode search
+
 **Validation Criteria:**
 - [ ] All geographic endpoints return same data as Node.js
-- [ ] Pincode search works with pagination
+- [ ] Pincode search works with pagination (same limit/page logic)
 - [ ] Address lookup by pincode works correctly
-- [ ] Sub-district/village filtering by pincode works
-- [ ] Empty parameters handled gracefully
+- [ ] Sub-district/village filtering by pincode works exactly as Node.js
+- [ ] Empty parameters handled gracefully with same responses
+
+---
+
+### Task 4.3: Dashboard & Statistics Services
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 1.5 hours
+**Prerequisites**: Task 4.2 completed
+**Agent Instructions**: Implement dashboard services for statistics and analytics exactly matching current Node.js implementation
+
+**Sub-tasks:**
+- [ ] Create `DashboardService.java` with statistics methods
+- [ ] Implement status distribution calculation
+- [ ] Create recent updates service
+- [ ] Add devotee/namhatta count services
+- [ ] Test with existing data
+
+**Validation Criteria:**
+- [ ] Status distribution matches Node.js API response format
+- [ ] Recent updates return same data structure
+- [ ] Count services return accurate numbers
+- [ ] District filtering applied correctly for supervisors
 
 ---
 
@@ -1507,7 +1775,207 @@ public class DevoteeController {
 ---
 
 ### Task 5.4: Geographic & Dashboard Controllers
-**Status**: ☐ Not Started | ☐ In Progress | ☐ Completed
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 1.5 hours
+**Prerequisites**: Tasks 5.1, 5.2, 5.3 completed
+**Agent Instructions**: Create remaining controllers for geographic data and dashboard endpoints
+
+**Sub-tasks:**
+- [ ] Create `GeographicController.java` with all location endpoints
+- [ ] Create `DashboardController.java` with statistics endpoints
+- [ ] Create `HierarchyController.java` for leadership data
+- [ ] Test all endpoints match Node.js API responses
+- [ ] Verify public vs protected endpoint access
+
+**Validation Criteria:**
+- [ ] All geographic endpoints accessible without authentication
+- [ ] Dashboard endpoints require authentication
+- [ ] Response formats exactly match Node.js API
+- [ ] Error handling consistent with Node.js version
+
+---
+
+## Phase 6: Data Transfer Objects & Validation
+
+### Task 6.1: Create Request/Response DTOs
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 2 hours
+**Prerequisites**: Phase 5 completed
+**Agent Instructions**: Create all DTOs for API requests and responses that exactly match the Node.js API structure
+
+**Sub-tasks:**
+- [ ] Create request DTOs (CreateDevoteeDto, UpdateDevoteeDto, etc.)
+- [ ] Create response DTOs (DevoteeDto, NamhattaDto, etc.)
+- [ ] Add Jackson annotations for JSON serialization
+- [ ] Test serialization/deserialization matches Node.js format
+- [ ] Handle all nested objects and arrays correctly
+
+**Validation Criteria:**
+- [ ] All DTOs serialize to same JSON structure as Node.js
+- [ ] Date formats match exactly (ISO strings)
+- [ ] Nested address objects structured correctly
+- [ ] Array fields (devotional_courses) handled properly
+
+---
+
+### Task 6.2: Input Validation & Error Handling
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 1.5 hours
+**Prerequisites**: Task 6.1 completed
+**Agent Instructions**: Implement validation and error handling that matches Node.js error responses
+
+**Sub-tasks:**
+- [ ] Add Bean Validation annotations to DTOs
+- [ ] Create `GlobalExceptionHandler.java` for error responses
+- [ ] Handle validation errors with same format as Node.js
+- [ ] Test error responses match Node.js exactly
+- [ ] Add custom validation for business rules
+
+**Validation Criteria:**
+- [ ] Validation errors return same HTTP status codes
+- [ ] Error message formats match Node.js exactly
+- [ ] Required field validation works correctly
+- [ ] Custom business rule validation implemented
+
+---
+
+## Phase 7: API Testing & Compatibility
+
+### Task 7.1: Create Test Endpoints
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 1 hour
+**Prerequisites**: Phase 6 completed
+**Agent Instructions**: Create comprehensive test endpoints to validate API compatibility
+
+**Sub-tasks:**
+- [ ] Create `ApiTestController.java` with comparison endpoints
+- [ ] Test all CRUD operations match Node.js behavior
+- [ ] Verify authentication flow works identically
+- [ ] Test district filtering for supervisors
+- [ ] Compare response formats side-by-side
+
+**Validation Criteria:**
+- [ ] All API endpoints return identical responses
+- [ ] Authentication flow works exactly as Node.js
+- [ ] Error responses match format and status codes
+- [ ] Pagination and sorting work identically
+
+---
+
+### Task 7.2: API Response Format Validation
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 1 hour
+**Prerequisites**: Task 7.1 completed
+**Agent Instructions**: Validate that all API responses exactly match Node.js format
+
+**Sub-tasks:**
+- [ ] Compare devotee API responses field-by-field
+- [ ] Compare namhatta API responses field-by-field
+- [ ] Verify geographic API responses match exactly
+- [ ] Test authentication API responses
+- [ ] Document any format differences and fix them
+
+**Validation Criteria:**
+- [ ] JSON response structure identical to Node.js
+- [ ] Field names and types match exactly
+- [ ] Date/time formats consistent
+- [ ] Null handling matches Node.js behavior
+
+---
+
+### Task 7.3: End-to-End API Testing
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 2 hours
+**Prerequisites**: Task 7.2 completed
+**Agent Instructions**: Perform comprehensive end-to-end testing of all API functionality
+
+**Sub-tasks:**
+- [ ] Test complete user authentication flow
+- [ ] Test devotee CRUD operations with district filtering
+- [ ] Test namhatta CRUD operations
+- [ ] Test all geographic endpoints
+- [ ] Test dashboard and statistics endpoints
+- [ ] Verify role-based access control works
+
+**Validation Criteria:**
+- [ ] All API endpoints function correctly
+- [ ] District supervisor access restrictions work
+- [ ] Data persistence works correctly
+- [ ] No breaking changes from Node.js version
+
+---
+
+## Phase 8: Frontend Integration & Deployment
+
+### Task 8.1: Frontend API Configuration
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 30 minutes
+**Prerequisites**: Phase 7 completed
+**Agent Instructions**: Configure frontend to connect to Spring Boot backend
+
+**Sub-tasks:**
+- [ ] Update `client/src/lib/api-config.ts` for Spring Boot endpoints
+- [ ] Test frontend connectivity with Spring Boot
+- [ ] Verify all frontend features work with new backend
+- [ ] Update environment configuration
+- [ ] Test authentication flow from frontend
+
+**Validation Criteria:**
+- [ ] Frontend successfully connects to Spring Boot
+- [ ] All pages load and function correctly
+- [ ] Authentication works from browser
+- [ ] CRUD operations work from UI
+
+---
+
+### Task 8.2: Production Deployment Setup
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 1 hour
+**Prerequisites**: Task 8.1 completed
+**Agent Instructions**: Configure production deployment for Spring Boot application
+
+**Sub-tasks:**
+- [ ] Configure production `application-prod.yml`
+- [ ] Update `.replit` file for production deployment
+- [ ] Configure environment variables for production
+- [ ] Test production build and deployment
+- [ ] Verify SSL and security settings
+
+**Validation Criteria:**
+- [ ] Production build completes successfully
+- [ ] Application starts in production mode
+- [ ] Database connections work in production
+- [ ] Security settings configured correctly
+
+---
+
+### Task 8.3: Final Migration Validation
+**Status**: ☐ Not Started | ☐ In Progress | ☑ Completed
+**Estimated Time**: 1 hour
+**Prerequisites**: Task 8.2 completed
+**Agent Instructions**: Perform final validation that Spring Boot migration is complete and successful
+
+**Sub-tasks:**
+- [ ] Test all API endpoints one final time
+- [ ] Verify frontend works completely with Spring Boot
+- [ ] Check performance compared to Node.js version
+- [ ] Document any remaining differences
+- [ ] Create migration completion report
+
+**Final Validation Criteria:**
+- [ ] All 25+ API endpoints working identically to Node.js
+- [ ] Frontend functions 100% with Spring Boot backend
+- [ ] Authentication and authorization work correctly
+- [ ] Database operations perform well
+- [ ] No data loss or corruption
+- [ ] Ready for production use
+
+**Migration Success Indicators:**
+- [ ] Can switch VITE_API_BASE_URL to Spring Boot and everything works
+- [ ] All user roles (admin, office, supervisor) function correctly
+- [ ] District filtering works for supervisors
+- [ ] All CRUD operations preserve data integrity
+- [ ] Performance is equal or better than Node.js version
 
 **Sub-tasks:**
 - [ ] Create `GeographicController.java` for location endpoints
