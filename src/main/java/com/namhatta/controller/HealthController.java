@@ -1,23 +1,43 @@
 package com.namhatta.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.namhatta.dto.ApiResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import javax.sql.DataSource;
+import java.sql.Connection;
 import java.util.HashMap;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/health")
+@RequestMapping("/api")
+@CrossOrigin(origins = "*")
 public class HealthController {
-
-    @GetMapping
-    public Map<String, Object> health() {
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", "UP");
-        response.put("service", "Namhatta Management System");
-        response.put("version", "1.0.0");
-        response.put("timestamp", System.currentTimeMillis());
-        return response;
+    
+    @Autowired
+    private DataSource dataSource;
+    
+    @GetMapping("/health")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> health() {
+        Map<String, Object> healthInfo = new HashMap<>();
+        
+        try {
+            // Test database connection
+            try (Connection conn = dataSource.getConnection()) {
+                healthInfo.put("database", "connected");
+                healthInfo.put("database_url", conn.getMetaData().getURL());
+            }
+        } catch (Exception e) {
+            healthInfo.put("database", "disconnected");
+            healthInfo.put("database_error", e.getMessage());
+        }
+        
+        healthInfo.put("application", "Spring Boot Namhatta Management System");
+        healthInfo.put("version", "1.0.0");
+        healthInfo.put("status", "running");
+        healthInfo.put("timestamp", System.currentTimeMillis());
+        
+        return ResponseEntity.ok(ApiResponse.success("Health check completed", healthInfo));
     }
 }
