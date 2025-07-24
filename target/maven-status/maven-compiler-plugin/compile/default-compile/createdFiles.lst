@@ -16,6 +16,7 @@ com/namhatta/entity/User.class
 com/namhatta/service/DashboardService.class
 com/namhatta/controller/ApiCompatibilityController.class
 com/namhatta/dto/AddressDTO.class
+com/namhatta/config/WebConfig.class
 com/namhatta/NamhattaApplication.class
 com/namhatta/entity/DevoteeAddress.class
 com/namhatta/controller/NamhattaController.class
@@ -32,6 +33,7 @@ com/namhatta/entity/Namhatta.class
 com/namhatta/controller/DatabaseTestController.class
 com/namhatta/security/JwtTokenProvider.class
 com/namhatta/repository/DevotionalStatusRepository.class
+com/namhatta/controller/SpaController.class
 com/namhatta/security/SecurityConfig.class
 com/namhatta/entity/UserSession.class
 com/namhatta/dto/AuthDTO$LoginResponse.class

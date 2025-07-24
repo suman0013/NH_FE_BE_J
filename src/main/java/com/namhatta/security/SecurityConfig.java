@@ -47,7 +47,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/health").permitAll()
                 .requestMatchers("/entity-test/**").permitAll()
                 .requestMatchers("/api/geography/**").permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers("/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/", "/index.html", "/static/**", "/assets/**").permitAll()
+                .requestMatchers("/*.js", "/*.css", "/*.ico", "/*.png", "/*.jpg", "/*.svg", "/*.map").permitAll()
+                .requestMatchers("/api/**").authenticated()
+                .anyRequest().permitAll()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         
