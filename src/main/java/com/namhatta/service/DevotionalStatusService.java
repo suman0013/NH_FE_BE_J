@@ -81,4 +81,9 @@ public class DevotionalStatusService {
         }
         devotionalStatusRepository.deleteById(id);
     }
+    
+    // Method for testing API compatibility
+    public long getTotalCount() {
+        return devotionalStatusRepository.count();
+    }
 }

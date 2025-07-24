@@ -155,4 +155,14 @@ public class DevoteeService {
     public long getDevoteeCountByNamhatta(Long namhattaId) {
         return devoteeRepository.countByNamhattaId(namhattaId);
     }
+    
+    // Method for testing API compatibility
+    public long getTotalCount() {
+        return devoteeRepository.count();
+    }
+    
+    // Method to match Node.js API signature for testing
+    public Page<DevoteeDTO> getAllDevotees(int page, int size, String search) {
+        return getDevotees(page, size, "id", "asc", search);
+    }
 }

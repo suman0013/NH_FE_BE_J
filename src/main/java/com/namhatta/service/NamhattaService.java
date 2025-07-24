@@ -129,4 +129,18 @@ public class NamhattaService {
     public long getNamhattaCountByStatus(String status) {
         return namhattaRepository.countByStatus(status);
     }
+    
+    // Method for testing API compatibility
+    public long getTotalCount() {
+        return namhattaRepository.count();
+    }
+    
+    // Method to match Node.js API signature for testing
+    public Page<NamhattaDTO> getAllNamhattas(int page, int size, String search) {
+        return getNamhattas(page, size, "id", "asc", search, null);
+    }
+    
+    public boolean isCodeAvailable(String code) {
+        return !namhattaRepository.existsByCode(code);
+    }
 }
