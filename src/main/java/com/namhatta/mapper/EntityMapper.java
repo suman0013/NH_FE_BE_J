@@ -139,10 +139,26 @@ public class EntityMapper {
             dto.setDevoteeCount(namhatta.getDevotees().size());
         }
         
-        // Map addresses
+        // Map addresses - simplified to avoid method overloading issues
         if (namhatta.getAddresses() != null) {
             List<AddressDTO> addresses = namhatta.getAddresses().stream()
-                .map(this::toAddressDTO)
+                .map(namhattaAddress -> {
+                    if (namhattaAddress == null || namhattaAddress.getAddress() == null) return null;
+                    
+                    Address address = namhattaAddress.getAddress();
+                    AddressDTO addressDTO = new AddressDTO();
+                    addressDTO.setId(address.getId());
+                    addressDTO.setCountry(address.getCountry());
+                    addressDTO.setStateNameEnglish(address.getStateNameEnglish());
+                    addressDTO.setDistrictNameEnglish(address.getDistrictNameEnglish());
+                    addressDTO.setSubdistrictNameEnglish(address.getSubdistrictNameEnglish());
+                    addressDTO.setVillageNameEnglish(address.getVillageNameEnglish());
+                    addressDTO.setPincode(address.getPincode());
+                    addressDTO.setLandmark(namhattaAddress.getLandmark());
+                    addressDTO.setAddressType(namhattaAddress.getAddressType());
+                    return addressDTO;
+                })
+                .filter(addressDTO -> addressDTO != null)
                 .collect(Collectors.toList());
             dto.setAddresses(addresses);
         }
