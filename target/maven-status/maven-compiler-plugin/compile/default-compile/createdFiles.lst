@@ -10,7 +10,6 @@ com/namhatta/entity/Devotee.class
 com/namhatta/entity/NamhattaAddress.class
 com/namhatta/entity/DevotionalStatus.class
 com/namhatta/controller/EntityTestController.class
-com/namhatta/config/SecurityConfig.class
 com/namhatta/entity/Address.class
 com/namhatta/controller/ApiTestController.class
 com/namhatta/entity/User.class

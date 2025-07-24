@@ -21,7 +21,7 @@ fi
 echo "✅ Java version: $(java -version 2>&1 | head -n 1)"
 
 # Set environment variables if not already set
-export DATABASE_URL=${DATABASE_URL:-"postgresql://neondb_owner:npg_5MIwCD4YhSdP@ep-calm-silence-a15zko7l-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"}
+export DATABASE_URL=${DATABASE_URL:-"jdbc:postgresql://ep-calm-silence-a15zko7l-pooler.ap-southeast-1.aws.neon.tech:5432/neondb?user=neondb_owner&password=npg_5MIwCD4YhSdP&sslmode=require"}
 export JWT_SECRET=${JWT_SECRET:-"42d236149a7fe69b8f2f5ec7093f4805873e6569098cacbdc076eae0f80eef53"}
 export PORT=${PORT:-5000}
 
