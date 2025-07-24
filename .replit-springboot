@@ -1,0 +1,12 @@
+run = "mvn spring-boot:run -Dspring-boot.run.profiles=dev"
+modules = ["java-graalvm22"]
+
+[nix]
+channel = "stable-22_11"
+
+[[ports]]
+localPort = 8080
+externalPort = 80
+
+[deployment]
+run = ["sh", "-c", "mvn spring-boot:run -Dspring-boot.run.profiles=prod"]
