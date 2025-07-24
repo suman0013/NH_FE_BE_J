@@ -33,6 +33,15 @@ Complete migration plan for Namhatta Management System from Node.js/Express to S
 - BCrypt password hashing
 - Development bypass functionality
 
+### 5. Additional Components Analysis
+**Files**: `server/index.ts`, `server/db.ts`, `server/seed-data.ts`, `server/vite.ts`
+
+**Infrastructure Components:**
+- **Express Server Setup** (`server/index.ts`): Request logging, error handling, development/production mode switching
+- **Database Connection** (`server/db.ts`): Neon PostgreSQL connection with environment variable configuration
+- **Data Seeding** (`server/seed-data.ts`): Comprehensive sample data generation with 100+ namhattas and 250+ devotees
+- **Development Server** (`server/vite.ts`): Hot module replacement, static file serving, development middleware
+
 ### 2. Database Schema Analysis
 **File**: `shared/schema.ts` - 12 PostgreSQL tables:
 
@@ -261,13 +270,16 @@ jwt:
 **Prerequisites**: Task 1.2 completed
 
 **Sub-tasks:**
-- [ ] Create all 14 JPA entity classes
+- [ ] Create all 14 JPA entity classes with Java 17 features
 - [ ] Configure relationships and foreign keys
-- [ ] Add proper annotations (@Entity, @Table, @Column)
-- [ ] Use Lombok for getters/setters
+- [ ] Add proper annotations (@Entity, @Table, @Column) - NO validation annotations
+- [ ] Use Lombok (@Data, @Builder, @Entity)
+- [ ] Implement text blocks for complex SQL queries
+- [ ] Use Stream API for collections processing
+- [ ] Write unit tests for each entity
 - [ ] Test entity mappings
 
-**Key Entities:**
+**Key Entities (Java 17 with NO validation annotations):**
 ```java
 @Entity
 @Table(name = "devotees")
@@ -337,6 +349,18 @@ public class Devotee {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+    
+    // Custom methods using Stream API
+    public Optional<String> getDisplayName() {
+        return Optional.ofNullable(initiatedName)
+            .filter(name -> !name.trim().isEmpty())
+            .or(() -> Optional.ofNullable(legalName));
+    }
+    
+    public boolean hasInitiation() {
+        return Stream.of(harinamDate, pancharatrikDate)
+            .anyMatch(date -> date != null && !date.trim().isEmpty());
+    }
 }
 
 @Entity
@@ -389,16 +413,59 @@ public class Namhatta {
 }
 ```
 
-#### Task 2.2: Create Repository Interfaces
+#### Task 2.2: Create Repository Interfaces with Java 17 Features
 **Status**: ☐ Not Started | ☐ In Progress | ☐ Completed
-**Estimated Time**: 2 hours
+**Estimated Time**: 2.5 hours
 **Prerequisites**: Task 2.1 completed
 
 **Sub-tasks:**
 - [ ] Create JPA repositories for all entities
-- [ ] Add custom query methods
-- [ ] Implement complex filtering queries
-- [ ] Add pagination support
+- [ ] Add custom query methods using Java 17 text blocks
+- [ ] Implement complex filtering with Stream API
+- [ ] Add pagination and sorting support
+- [ ] Write unit tests for repository methods
+- [ ] Use @Query with text blocks for complex queries
+
+**Repository Example with Java 17 Text Blocks:**
+```java
+@Repository
+public interface DevoteeRepository extends JpaRepository<Devotee, Long> {
+    
+    @Query("""
+        SELECT d FROM Devotee d 
+        LEFT JOIN DevoteeAddress da ON d.id = da.devoteeId
+        LEFT JOIN Address a ON da.addressId = a.id
+        WHERE (:search IS NULL OR 
+               LOWER(d.legalName) LIKE LOWER(CONCAT('%', :search, '%')) OR
+               LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%')) OR
+               LOWER(d.email) LIKE LOWER(CONCAT('%', :search, '%')))
+        AND (:statusId IS NULL OR d.devotionalStatusId = :statusId)
+        AND (:namhattaId IS NULL OR d.namhattaId = :namhattaId)
+        AND (:state IS NULL OR a.stateNameEnglish = :state)
+        AND (:district IS NULL OR a.districtNameEnglish = :district)
+        """)
+    Page<Devotee> findDevoteesWithFilters(
+        @Param("search") String search,
+        @Param("statusId") Long statusId,
+        @Param("namhattaId") Long namhattaId,
+        @Param("state") String state,
+        @Param("district") String district,
+        Pageable pageable
+    );
+    
+    @Query("""
+        SELECT d FROM Devotee d 
+        WHERE d.namhattaId = :namhattaId
+        ORDER BY d.legalName ASC
+        """)
+    List<Devotee> findByNamhattaIdOrderByName(@Param("namhattaId") Long namhattaId);
+    
+    @Query("""
+        SELECT COUNT(d) FROM Devotee d 
+        WHERE d.devotionalStatusId = :statusId
+        """)
+    Long countByDevotionalStatus(@Param("statusId") Long statusId);
+}
 
 ### Phase 3: Custom Validation Utilities
 
@@ -414,7 +481,7 @@ public class Namhatta {
 - [ ] Create custom validators for business rules
 - [ ] Test validation framework
 
-**Custom Validation Framework:**
+**Custom Validation Framework (Java 17 with Stream API):**
 ```java
 @Data
 @Builder
@@ -440,65 +507,103 @@ public class ValidationResult {
             .errors(List.of(error))
             .build();
     }
+    
+    public static ValidationResult combine(ValidationResult... results) {
+        List<String> allErrors = Arrays.stream(results)
+            .filter(result -> !result.isValid())
+            .flatMap(result -> result.getErrors().stream())
+            .toList();
+            
+        return allErrors.isEmpty() 
+            ? ValidationResult.success()
+            : ValidationResult.builder().valid(false).errors(allErrors).build();
+    }
 }
 
 @Component
+@Slf4j
 public class ValidationUtils {
+    
+    // Email regex pattern for validation
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^[+]?[0-9\\-\\s()]+$");
     
     public ValidationResult validateRequired(String fieldName, Object value) {
         if (value == null || (value instanceof String && ((String) value).trim().isEmpty())) {
-            return ValidationResult.failure(fieldName + " is required");
+            return ValidationResult.failure("%s is required".formatted(fieldName));
+        }
+        return ValidationResult.success();
+    }
+    
+    public ValidationResult validateStringLength(String fieldName, String value, int minLength, int maxLength) {
+        if (value != null) {
+            int length = value.trim().length();
+            if (length < minLength) {
+                return ValidationResult.failure("%s must be at least %d characters".formatted(fieldName, minLength));
+            }
+            if (length > maxLength) {
+                return ValidationResult.failure("%s must not exceed %d characters".formatted(fieldName, maxLength));
+            }
         }
         return ValidationResult.success();
     }
     
     public ValidationResult validateEmail(String email) {
-        if (email != null && !email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+        if (email != null && !EMAIL_PATTERN.matcher(email).matches()) {
             return ValidationResult.failure("Invalid email format");
         }
         return ValidationResult.success();
     }
     
     public ValidationResult validatePhone(String phone) {
-        if (phone != null && !phone.matches("^[+]?[0-9\\-\\s()]+$")) {
+        if (phone != null && !PHONE_PATTERN.matcher(phone).matches()) {
             return ValidationResult.failure("Invalid phone format");
         }
         return ValidationResult.success();
     }
     
-    public ValidationResult validateDevotee(DevoteeDto devotee) {
-        ValidationResult result = ValidationResult.success();
-        
-        // Required field validations
-        result = combineResults(result, validateRequired("Legal name", devotee.getLegalName()));
-        result = combineResults(result, validateRequired("Date of birth", devotee.getDob()));
-        result = combineResults(result, validateRequired("Present address", devotee.getPresentAddress()));
-        result = combineResults(result, validateRequired("Permanent address", devotee.getPermanentAddress()));
-        
-        // Format validations
-        if (devotee.getEmail() != null) {
-            result = combineResults(result, validateEmail(devotee.getEmail()));
+    public ValidationResult validateEnum(String fieldName, String value, String... allowedValues) {
+        if (value != null && Arrays.stream(allowedValues).noneMatch(value::equals)) {
+            return ValidationResult.failure("%s must be one of: %s".formatted(
+                fieldName, String.join(", ", allowedValues)));
         }
-        if (devotee.getPhone() != null) {
-            result = combineResults(result, validatePhone(devotee.getPhone()));
-        }
-        
-        return result;
+        return ValidationResult.success();
     }
     
-    private ValidationResult combineResults(ValidationResult result1, ValidationResult result2) {
-        if (result1.isValid() && result2.isValid()) {
-            return ValidationResult.success();
-        }
-        
-        List<String> allErrors = new ArrayList<>();
-        if (!result1.isValid()) allErrors.addAll(result1.getErrors());
-        if (!result2.isValid()) allErrors.addAll(result2.getErrors());
-        
-        return ValidationResult.builder()
-            .valid(false)
-            .errors(allErrors)
-            .build();
+    public ValidationResult validateDevotee(DevoteeDto devotee) {
+        return ValidationResult.combine(
+            validateRequired("Legal name", devotee.getLegalName()),
+            validateStringLength("Legal name", devotee.getLegalName(), 2, 100),
+            validateRequired("Date of birth", devotee.getDob()),
+            validateRequired("Present address", devotee.getPresentAddress()),
+            validateRequired("Permanent address", devotee.getPermanentAddress()),
+            validateEmail(devotee.getEmail()),
+            validatePhone(devotee.getPhone()),
+            validateEnum("Gender", devotee.getGender(), "MALE", "FEMALE", "OTHER"),
+            validateEnum("Marital status", devotee.getMaritalStatus(), "MARRIED", "UNMARRIED", "WIDOWED")
+        );
+    }
+    
+    public ValidationResult validateNamhatta(NamhattaDto namhatta) {
+        return ValidationResult.combine(
+            validateRequired("Name", namhatta.getName()),
+            validateStringLength("Name", namhatta.getName(), 3, 100),
+            validateRequired("Code", namhatta.getCode()),
+            validateStringLength("Code", namhatta.getCode(), 3, 20),
+            validateRequired("Secretary", namhatta.getSecretary()),
+            validateRequired("Address", namhatta.getAddress()),
+            validateEnum("Status", namhatta.getStatus(), "PENDING_APPROVAL", "APPROVED", "REJECTED")
+        );
+    }
+    
+    public ValidationResult validateStatusUpgrade(Long fromStatusId, Long toStatusId, String comment) {
+        return ValidationResult.combine(
+            validateRequired("From status", fromStatusId),
+            validateRequired("To status", toStatusId),
+            Optional.ofNullable(comment)
+                .map(c -> validateStringLength("Comment", c, 0, 500))
+                .orElse(ValidationResult.success())
+        );
     }
 }
 ```
@@ -679,19 +784,83 @@ public class JwtTokenProvider {
 }
 ```
 
-### Phase 6: Service Layer Implementation
+### Phase 6: Service Layer Implementation with Stream API
 
 #### Task 6.1: Core Business Services
 **Status**: ☐ Not Started | ☐ In Progress | ☐ Completed
-**Estimated Time**: 4 hours
+**Estimated Time**: 4.5 hours
 **Prerequisites**: Task 5.1 completed
 
 **Sub-tasks:**
 - [ ] Create DevoteeService with all CRUD operations
-- [ ] Create NamhattaService with approval workflow
+- [ ] Create NamhattaService with approval workflow  
 - [ ] Create GeographicService for location data
 - [ ] Create DashboardService for analytics
-- [ ] Implement district-based filtering
+- [ ] Implement district-based filtering with Stream API
+- [ ] Write comprehensive unit tests for all services
+- [ ] Use Java 17 features (switch expressions, pattern matching)
+
+**Service Example with Stream API:**
+```java
+@Service
+@Transactional
+@Slf4j
+public class DevoteeService {
+    
+    @Autowired
+    private DevoteeRepository devoteeRepository;
+    
+    @Autowired
+    private ValidationUtils validationUtils;
+    
+    public PageResult<DevoteeDto> getDevotees(DevoteeFilter filter, Pageable pageable) {
+        // Apply district filtering for supervisors using Stream API
+        if (filter.getUserRole() == UserRole.DISTRICT_SUPERVISOR) {
+            Set<String> allowedDistricts = filter.getUserDistricts().stream()
+                .collect(Collectors.toSet());
+            
+            filter = filter.toBuilder()
+                .allowedDistricts(allowedDistricts)
+                .build();
+        }
+        
+        Page<Devotee> devotees = devoteeRepository.findDevoteesWithFilters(
+            filter.getSearch(),
+            filter.getStatusId(),
+            filter.getNamhattaId(),
+            filter.getState(),
+            filter.getDistrict(),
+            pageable
+        );
+        
+        List<DevoteeDto> dtos = devotees.getContent().stream()
+            .map(this::convertToDto)
+            .toList();
+            
+        return PageResult.<DevoteeDto>builder()
+            .data(dtos)
+            .total(devotees.getTotalElements())
+            .page(devotees.getNumber() + 1)
+            .size(devotees.getSize())
+            .build();
+    }
+    
+    public DevoteeDto createDevotee(CreateDevoteeRequest request, UserContext userContext) {
+        // Custom validation instead of annotations
+        ValidationResult validation = validationUtils.validateDevotee(request.getDevotee());
+        if (!validation.isValid()) {
+            throw new ValidationException(validation.getErrors());
+        }
+        
+        Devotee devotee = convertToEntity(request.getDevotee());
+        devotee = devoteeRepository.save(devotee);
+        
+        log.info("Created devotee with ID: {} by user: {}", 
+            devotee.getId(), userContext.getUsername());
+            
+        return convertToDto(devotee);
+    }
+}
 
 ### Phase 7: REST Controllers & API Layer
 
@@ -731,18 +900,90 @@ public class JwtTokenProvider {
 - [ ] Generate Swagger UI
 - [ ] Verify API documentation matches specification
 
-### Phase 9: Testing & Validation
+### Phase 9: Comprehensive Testing & Validation
 
-#### Task 9.1: API Compatibility Testing
+#### Task 9.1: Unit Testing Framework
 **Status**: ☐ Not Started | ☐ In Progress | ☐ Completed
-**Estimated Time**: 3 hours
+**Estimated Time**: 2 hours
 **Prerequisites**: Task 8.1 completed
 
 **Sub-tasks:**
-- [ ] Test all 37 endpoints
+- [ ] Set up JUnit 5 and Spring Boot Test
+- [ ] Create test configuration with TestContainers for PostgreSQL
+- [ ] Write entity tests with validation
+- [ ] Write repository tests with test data
+- [ ] Write service layer unit tests with mocking
+- [ ] Write controller integration tests
+
+**Test Example with JUnit 5:**
+```java
+@SpringBootTest
+@Testcontainers
+@Transactional
+class DevoteeServiceTest {
+    
+    @Container
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
+        .withDatabaseName("test_namhatta")
+        .withUsername("test")
+        .withPassword("test");
+    
+    @Autowired
+    private DevoteeService devoteeService;
+    
+    @MockBean
+    private ValidationUtils validationUtils;
+    
+    @Test
+    @DisplayName("Should create devotee with valid data")
+    void shouldCreateDevoteeWithValidData() {
+        // Given
+        CreateDevoteeRequest request = CreateDevoteeRequest.builder()
+            .devotee(createValidDevoteeDto())
+            .build();
+            
+        when(validationUtils.validateDevotee(any()))
+            .thenReturn(ValidationResult.success());
+        
+        // When
+        DevoteeDto result = devoteeService.createDevotee(request, createUserContext());
+        
+        // Then
+        assertThat(result.getId()).isNotNull();
+        assertThat(result.getLegalName()).isEqualTo("Test Devotee");
+        verify(validationUtils).validateDevotee(any());
+    }
+    
+    @Test
+    @DisplayName("Should apply district filtering for supervisors")
+    void shouldApplyDistrictFilteringForSupervisors() {
+        // Test district-based filtering logic
+        DevoteeFilter filter = DevoteeFilter.builder()
+            .userRole(UserRole.DISTRICT_SUPERVISOR)
+            .userDistricts(List.of("Purulia", "Nadia"))
+            .build();
+            
+        PageResult<DevoteeDto> result = devoteeService.getDevotees(filter, 
+            PageRequest.of(0, 10));
+            
+        assertThat(result.getData()).isNotEmpty();
+        // Verify only devotees from allowed districts are returned
+    }
+}
+```
+
+#### Task 9.2: API Compatibility Testing
+**Status**: ☐ Not Started | ☐ In Progress | ☐ Completed
+**Estimated Time**: 3 hours
+**Prerequisites**: Task 9.1 completed
+
+**Sub-tasks:**
+- [ ] Test all 37 endpoints with Postman/REST Assured
 - [ ] Verify response formats match Node.js exactly
-- [ ] Test authentication and authorization
-- [ ] Validate error responses
+- [ ] Test authentication and authorization flows
+- [ ] Validate error responses match Node.js format
+- [ ] Test pagination, filtering, and sorting
+- [ ] Performance comparison with Node.js version
 
 ### Phase 10: Frontend Integration
 
@@ -773,9 +1014,37 @@ public class JwtTokenProvider {
 - [ ] CRUD operations preserve data integrity
 - [ ] File uploads and geographic data work correctly
 
-**Total Tasks**: 20 tasks across 10 phases
-**Estimated Total Time**: 32 hours
-**Critical Path**: Authentication → Entities → Services → Controllers → Testing
+## Additional Migration Components
+
+### Phase 11: Data Seeding & Sample Data
+#### Task 11.1: Spring Boot Data Initialization
+**Status**: ☐ Not Started | ☐ In Progress | ☐ Completed
+**Estimated Time**: 1.5 hours
+**Prerequisites**: Task 10.1 completed
+
+**Sub-tasks:**
+- [ ] Create DataSeeder component with @EventListener(ApplicationReadyEvent.class)
+- [ ] Port sample data generation logic from Node.js seed-data.ts
+- [ ] Use Stream API for data generation and processing
+- [ ] Create sample users, namhattas, devotees, and addresses
+- [ ] Implement conditional seeding (only if database is empty)
+
+### Phase 12: Production Configuration
+#### Task 12.1: Production Optimization
+**Status**: ☐ Not Started | ☐ In Progress | ☐ Completed
+**Estimated Time**: 1 hour
+**Prerequisites**: Task 11.1 completed
+
+**Sub-tasks:**
+- [ ] Configure production profile in application-prod.yml
+- [ ] Set up connection pooling for PostgreSQL
+- [ ] Configure logging levels for production
+- [ ] Add health check endpoints
+- [ ] Configure CORS for frontend domain
+
+**Total Tasks**: 24 tasks across 12 phases
+**Estimated Total Time**: 38 hours
+**Critical Path**: Authentication → Entities → Services → Controllers → Testing → Production
 
 ## Migration Notes
 
