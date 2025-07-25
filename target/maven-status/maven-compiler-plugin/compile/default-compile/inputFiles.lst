@@ -12,8 +12,8 @@
 /home/runner/workspace/src/main/java/com/namhatta/entity/UserDistrict.java
 /home/runner/workspace/src/main/java/com/namhatta/controller/SpaController.java
 /home/runner/workspace/src/main/java/com/namhatta/entity/NamhattaAddress.java
-/home/runner/workspace/src/main/java/com/namhatta/repository/AddressRepository.java
 /home/runner/workspace/src/main/java/com/namhatta/config/WebConfig.java
+/home/runner/workspace/src/main/java/com/namhatta/repository/AddressRepository.java
 /home/runner/workspace/src/main/java/com/namhatta/mapper/EntityMapper.java
 /home/runner/workspace/src/main/java/com/namhatta/security/SecurityConfig.java
 /home/runner/workspace/src/main/java/com/namhatta/entity/DevotionalStatus.java
