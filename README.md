@@ -1,48 +1,41 @@
 # Namhatta Management System
 
-A comprehensive web application for managing Namhatta religious/spiritual organizations, built with React and Express.js.
+A comprehensive web application for managing Namhatta religious/spiritual organizations, built with React frontend and Spring Boot backend.
 
 ## Quick Start
 
-1. **Clone and Install**
+1. **Start Spring Boot Backend**
    ```bash
-   git clone <repository-url>
-   cd namhatta-management-system
+   mvn spring-boot:run
+   ```
+   Backend API will be available at `http://localhost:8080/api`
+
+2. **Start React Frontend** (in another terminal)
+   ```bash
+   cd client
    npm install
-   ```
-
-2. **Database Setup**
-   The project is pre-configured with a specific Neon PostgreSQL database. The `.env` file contains the database URL:
-   ```
-   DATABASE_URL=postgresql://neondb_owner:npg_5MIwCD4YhSdP@ep-calm-silence-a15zko7l-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
-   ```
-
-3. **Initialize Database Schema**
-   ```bash
-   npm run db:push
-   ```
-
-4. **Start Development Server**
-   ```bash
    npm run dev
    ```
-   Application will be available at `http://localhost:5000`
+   Frontend will be available at `http://localhost:3000`
 
 ## Database Configuration
 
-The application uses a specific Neon PostgreSQL database by default. This configuration ensures:
-- Consistent database access across different environments
-- No need for users to set up their own database
-- Automatic connection when importing the project
+The application uses a Neon PostgreSQL database. Configure the database connection in `src/main/resources/application.yml`:
+```yaml
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    driver-class-name: org.postgresql.Driver
+```
 
-If you need to use a different database, update the `DATABASE_URL` in the `.env` file.
+Set the `DATABASE_URL` environment variable with your PostgreSQL connection string.
 
 ## Architecture
 
-- **Frontend**: React 18 + TypeScript + Tailwind CSS
-- **Backend**: Express.js + TypeScript
-- **Database**: PostgreSQL with Drizzle ORM
-- **Build Tool**: Vite for frontend, ESBuild for backend
+- **Frontend**: React 18 + TypeScript + Tailwind CSS + Vite
+- **Backend**: Spring Boot 3.2.1 + Java 17 + JPA/Hibernate
+- **Database**: PostgreSQL with Spring Data JPA
+- **Security**: Spring Security with JWT authentication
 
 ## Key Features
 

@@ -15,22 +15,21 @@ This is a full-stack web application for managing Namhatta religious/spiritual o
 - **Build Tool**: Vite for fast development and optimized builds
 
 ### Backend Architecture
-- **Runtime**: Node.js 20 with Express.js
-- **Language**: TypeScript with ES modules
-- **Database**: PostgreSQL with Drizzle ORM
+- **Runtime**: Spring Boot 3.2.1 with Java 17
+- **Framework**: Spring Framework with Spring Security
+- **Database**: PostgreSQL with Spring Data JPA/Hibernate
 - **Database Provider**: Neon serverless PostgreSQL
-- **Authentication**: JWT tokens with HTTP-only cookies, bcrypt password hashing
-- **Session Management**: PostgreSQL-based sessions with single login enforcement
+- **Authentication**: JWT tokens with Spring Security
 - **Authorization**: Role-based access control (ADMIN, OFFICE, DISTRICT_SUPERVISOR)
-- **Security**: Rate limiting, token blacklisting, district-based data filtering
-- **API Design**: RESTful API with JSON responses
+- **Security**: Spring Security with JWT filters, CORS configuration
+- **API Design**: RESTful API with JSON responses and OpenAPI documentation
 
 ### Data Storage Solutions
 - **Primary Database**: PostgreSQL hosted on Neon
-- **ORM**: Drizzle ORM for type-safe database operations
-- **Migrations**: Drizzle Kit for schema management
-- **Session Storage**: PostgreSQL-based session store
-- **Connection**: Neon serverless PostgreSQL with connection pooling
+- **ORM**: Spring Data JPA with Hibernate for database operations
+- **Entity Management**: JPA entities with proper relationships
+- **Connection Pooling**: HikariCP connection pool
+- **Connection**: Neon serverless PostgreSQL with Spring configuration
 
 ## Key Components
 
@@ -166,6 +165,34 @@ RESTful endpoints organized by resource:
 ✅ Phase 8: Frontend Integration & Deployment (2/2 tasks)
 
 **Status**: Migration complete - both Node.js and Spring Boot backends ready for production
+
+### July 25, 2025 - NODE.JS BACKEND CLEANUP COMPLETED ✅
+**Successfully removed all Node.js backend components, keeping only React frontend and Spring Boot backend**
+
+#### Cleanup Results
+- **Node.js Backend Removed**: Deleted entire server/ directory and all Node.js related files
+- **React Frontend**: Preserved complete client/ directory with all React components
+- **Spring Boot Backend**: Maintained complete src/ directory with all Java implementations  
+- **Configuration Files**: Removed Node.js configs, kept Spring Boot configuration files
+- **Documentation**: Updated README.md and architecture descriptions
+
+#### Files Removed
+- **Server Directory**: Complete server/ directory with Express.js implementation
+- **Shared Directory**: TypeScript schema definitions (replaced by JPA entities)
+- **Node.js Configs**: package.json, tsconfig.json, vite.config.ts, vitest.config.ts
+- **Build Artifacts**: node_modules/, dist/, package-lock.json  
+- **Environment Files**: .env.* files (Spring Boot uses application.yml)
+- **Scripts**: All Node.js related shell scripts
+- **Documentation**: Excessive migration documentation files
+
+#### Current Clean Architecture
+- **Frontend**: React app in client/ directory (port 3000)
+- **Backend**: Spring Boot app in src/ directory (port 8080)  
+- **Database**: PostgreSQL configuration in application.yml
+- **Build**: Maven for backend, npm for frontend only
+- **Development**: mvn spring-boot:run + cd client && npm run dev
+
+**Status**: Clean architecture established - ready for Spring Boot + React development
 
 ### July 25, 2025 - DEVELOPMENT ENVIRONMENT OPTIMIZED ✅ 
 **Successfully configured React + Spring Boot development environment with import optimization**
