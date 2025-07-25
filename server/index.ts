@@ -110,6 +110,94 @@ app.get('/api/districts', (req, res) => {
   res.json([{ id: 1, name: 'Purulia', stateId: 1 }]);
 });
 
+// Hierarchy endpoint
+app.get('/api/hierarchy', (req, res) => {
+  res.json({
+    regionalDirectors: [
+      {
+        id: 1,
+        name: 'Sri Krishna Das',
+        position: 'Regional Director',
+        region: 'West Bengal',
+        districts: ['Purulia', 'Bankura']
+      }
+    ],
+    coRegionalDirectors: [
+      {
+        id: 2,
+        name: 'Sri Govinda Das',
+        position: 'Co-Regional Director',
+        region: 'West Bengal',
+        districts: ['Hooghly', 'Howrah']
+      }
+    ],
+    districtSupervisors: [
+      {
+        id: 3,
+        name: 'Sri Ram Das',
+        position: 'District Supervisor',
+        district: 'Purulia',
+        namhattas: ['Purulia Namhatta', 'Raghunathpur Namhatta']
+      }
+    ]
+  });
+});
+
+// Status distribution endpoint
+app.get('/api/status-distribution', (req, res) => {
+  res.json({
+    distribution: [
+      { status: 'Shraddhavan', count: 5, percentage: 33.3 },
+      { status: 'Sadhusangi', count: 4, percentage: 26.7 },
+      { status: 'Gour Sevak', count: 3, percentage: 20.0 },
+      { status: 'Gour Sadhak', count: 2, percentage: 13.3 },
+      { status: 'Harinam Diksha', count: 1, percentage: 6.7 }
+    ],
+    totalDevotees: 15
+  });
+});
+
+// Devotional statuses endpoint
+app.get('/api/statuses', (req, res) => {
+  res.json([
+    { id: 1, name: 'Shraddhavan', level: 1, description: 'Initial spiritual seeker' },
+    { id: 2, name: 'Sadhusangi', level: 2, description: 'Association with devotees' },
+    { id: 3, name: 'Gour Sevak', level: 3, description: 'Service to Lord Gouranga' },
+    { id: 4, name: 'Gour Sadhak', level: 4, description: 'Spiritual practice under guidance' },
+    { id: 5, name: 'Sri Guru Charan Asraya', level: 5, description: 'Shelter at lotus feet of Guru' },
+    { id: 6, name: 'Harinam Diksha', level: 6, description: 'Initiation into chanting' },
+    { id: 7, name: 'Pancharatrik Diksha', level: 7, description: 'Second initiation' }
+  ]);
+});
+
+// Sub-districts endpoint
+app.get('/api/sub-districts', (req, res) => {
+  const { district, pincode } = req.query;
+  res.json([
+    { id: 1, name: 'Purulia Sadar', districtId: 1, pincode: '723101' },
+    { id: 2, name: 'Raghunathpur', districtId: 1, pincode: '723133' }
+  ]);
+});
+
+// Villages endpoint  
+app.get('/api/villages', (req, res) => {
+  const { subDistrict, pincode } = req.query;
+  res.json([
+    { id: 1, name: 'Purulia Town', subDistrictId: 1, pincode: '723101' },
+    { id: 2, name: 'Raghunathpur Town', subDistrictId: 2, pincode: '723133' }
+  ]);
+});
+
+// Pincodes endpoint
+app.get('/api/pincodes', (req, res) => {
+  const { search } = req.query;
+  res.json([
+    { pincode: '723101', district: 'Purulia', state: 'West Bengal' },
+    { pincode: '723133', district: 'Purulia', state: 'West Bengal' },
+    { pincode: '700001', district: 'Kolkata', state: 'West Bengal' }
+  ]);
+});
+
 // Build client if needed
 const buildExists = async () => {
   try {
