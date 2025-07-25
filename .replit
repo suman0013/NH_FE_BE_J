@@ -1,15 +1,19 @@
-modules = ["nodejs-20", "java-graalvm22.3", "bash", "web"]
+modules = ["nodejs-20", "java-graalvm22.3", "bash", "web", "python-3.11"]
 run = "npm run dev"
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-25_05"
-packages = ["mysql80", "sqlite", "maven", "openjdk17"]
+packages = ["mysql80", "sqlite", "maven", "openjdk17", "jdk17"]
 
 [deployment]
 deploymentTarget = "autoscale"
 run = ["npm", "run", "start"]
 build = ["npm", "run", "build"]
+
+[[ports]]
+localPort = 3000
+externalPort = 3000
 
 [[ports]]
 localPort = 5000
