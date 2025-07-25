@@ -80,6 +80,6 @@ function startServices() {
 
     console.log('\n✅ Development environment started successfully!');
     console.log('📱 Frontend: http://localhost:3000');
-    console.log('🔧 Backend API: http://localhost:5000');
+    console.log('🔧 Backend API: http://localhost:8080');
     console.log('\n💡 Use Ctrl+C to stop both services\n');
 }

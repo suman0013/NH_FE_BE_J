@@ -2,7 +2,7 @@
 
 /**
  * Get the API base URL for Spring Boot backend
- * Spring Boot runs on port 5000 in Replit environment
+ * Spring Boot runs on port 8080 in Replit environment
  * Can be overridden with VITE_API_BASE_URL environment variable
  */
 export const getApiBaseUrl = (): string => {
@@ -11,14 +11,13 @@ export const getApiBaseUrl = (): string => {
     return import.meta.env.VITE_API_BASE_URL;
   }
   
-  // In development, connect to Spring Boot backend on same port
-  // Spring Boot serves both API and static React frontend
+  // In development, connect to Spring Boot backend on port 8080
   if (import.meta.env.MODE === 'development') {
-    return ''; // Use relative URLs since Spring Boot serves everything
+    return 'http://localhost:8080';
   }
   
-  // In production, Spring Boot serves the React frontend as static content
-  return '';
+  // In production, use relative URLs (assuming reverse proxy setup)
+  return '/api';
 };
 
 /**
