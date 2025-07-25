@@ -1,249 +1,287 @@
-# Namhatta Management System - Development Setup Guide
+# Development Setup Guide
 
-## Development Setup Options
+## Complete Development Environment Configuration
 
-### Option 1: Concurrent Development (Recommended)
-Run both React and Spring Boot simultaneously with one command.
+This guide provides multiple options for running the Namhatta Management System in development mode.
 
-#### Setup:
+## Quick Start Options
+
+### Option 1: Full Stack Development (Recommended)
+Start both React frontend and Spring Boot backend simultaneously:
 ```bash
-# Install concurrently if not present
-npm install concurrently --save-dev
+./start-fullstack.sh
+```
+- **Frontend**: http://localhost:3000 (React + Vite)
+- **Backend**: http://localhost:8080 (Spring Boot)
+- **Proxy**: Frontend automatically proxies API calls to backend
+- **Auto-restart**: Both services restart on file changes
 
-# Add to package.json scripts
-"dev:fullstack": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
-"dev:frontend": "cd client && npm run dev",
-"dev:backend": "./run-spring-boot.sh"
+### Option 2: Separate Development
+Run frontend and backend in separate terminals:
+
+**Terminal 1 (Frontend)**:
+```bash
+./start-frontend.sh
 ```
 
-#### Usage:
+**Terminal 2 (Backend)**:
 ```bash
-npm run dev:fullstack
-```
-
-**Ports:**
-- Frontend: http://localhost:3000 (Vite dev server)
-- Backend: http://localhost:8080 (Spring Boot)
-
-**Pros:**
-- Single command startup
-- Auto-restart on file changes
-- Color-coded logs
-- Easy to manage
-
----
-
-### Option 2: Separate Terminals (Manual Control)
-Run frontend and backend in separate terminal sessions.
-
-#### Terminal 1 (Frontend):
-```bash
-cd client
-npm run dev
-```
-
-#### Terminal 2 (Backend):
-```bash
-# Using Maven directly
-mvn spring-boot:run
-
-# OR using the shell script
 ./run-spring-boot.sh
-
-# OR using Java directly
-java -jar target/namhatta-management-system-1.0.0.jar
 ```
 
-**Pros:**
-- Full control over each service
-- Easy debugging
-- Independent restart capability
-
----
-
-### Option 3: Replit Workflows (Platform Native)
-Use Replit's built-in workflow system.
-
-#### Frontend Workflow:
-```yaml
-# .replit-frontend
-run = "cd client && npm run dev"
-```
-
-#### Backend Workflow:
-```yaml
-# .replit-backend  
-run = "mvn spring-boot:run"
-```
-
-**Usage:**
-- Click workflow buttons in Replit
-- Monitor logs separately
-- Automatic port detection
-
----
-
-### Option 4: Docker Compose (Production-like)
-Containerized development environment.
-
-#### docker-compose.yml:
-```yaml
-version: '3.8'
-services:
-  frontend:
-    build: ./client
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./client:/app
-    command: npm run dev
-    
-  backend:
-    build: .
-    ports:
-      - "8080:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=dev
-    depends_on:
-      - postgres
-      
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: namhatta
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password
-    ports:
-      - "5432:5432"
-```
-
----
-
-## Quick Start Scripts
-
-### Package.json Scripts Addition:
-```json
-{
-  "scripts": {
-    "dev": "NODE_ENV=development tsx server/index.ts",
-    "dev:fullstack": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\" --names \"REACT,SPRING\" --prefix-colors \"cyan,yellow\"",
-    "dev:frontend": "cd client && npm run dev -- --port 3000",
-    "dev:backend": "./run-spring-boot.sh",
-    "build:frontend": "cd client && npm run build",
-    "build:backend": "mvn clean package -DskipTests",
-    "build:all": "npm run build:frontend && npm run build:backend"
-  }
-}
-```
-
-### Shell Scripts:
-
-#### start-dev.sh:
+### Option 3: Frontend Only
+For UI development without backend:
 ```bash
-#!/bin/bash
-echo "🚀 Starting Namhatta Management System Development Environment"
-echo "Frontend: http://localhost:3000"
-echo "Backend: http://localhost:8080"
-echo "Press Ctrl+C to stop all services"
-
-concurrently \
-  --names "REACT,SPRING" \
-  --prefix-colors "cyan,yellow" \
-  "cd client && npm run dev -- --port 3000" \
-  "./run-spring-boot.sh"
+./start-frontend.sh
 ```
 
-#### start-frontend.sh:
+### Option 4: Backend Only  
+For API development and testing:
 ```bash
-#!/bin/bash
-echo "🎨 Starting React Frontend Development Server"
-cd client && npm run dev -- --port 3000
+./run-spring-boot.sh
 ```
 
-#### start-backend.sh (enhanced):
-```bash
-#!/bin/bash
-echo "☕ Starting Spring Boot Backend Server"
-echo "Building application..."
-mvn clean compile -q
-echo "Starting server on port 8080..."
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
-```
+## Architecture Overview
 
----
+### Frontend (React + Vite)
+- **Framework**: React 18 with TypeScript
+- **Build Tool**: Vite for fast development
+- **UI Library**: Tailwind CSS + Radix UI components  
+- **State Management**: TanStack Query for server state
+- **Routing**: Wouter for client-side routing
+
+### Backend (Spring Boot)
+- **Framework**: Spring Boot 3.2.1 with Java 17
+- **Database**: PostgreSQL with JPA/Hibernate
+- **Security**: Spring Security with JWT authentication
+- **API**: RESTful endpoints with OpenAPI documentation
+- **Build**: Maven for dependency management
+
+## Development URLs
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| Frontend | http://localhost:3000 | React development server |
+| Backend API | http://localhost:8080/api | Spring Boot REST API |
+| Health Check | http://localhost:8080/actuator/health | Backend health status |
+| Swagger UI | http://localhost:8080/swagger-ui.html | API documentation |
 
 ## Environment Configuration
 
-### Frontend (.env):
+### Backend Environment (.env.local)
 ```env
+# Database
+DATABASE_URL=jdbc:postgresql://localhost:5432/namhatta
+
+# JWT Security
+JWT_SECRET=your-super-secret-jwt-key-at-least-32-characters-long
+
+# Server Configuration
+PORT=8080
+SPRING_PROFILES_ACTIVE=dev
+```
+
+### Frontend Environment (client/.env.local)
+```env
+# API Configuration
 VITE_API_BASE_URL=http://localhost:8080/api
 VITE_APP_TITLE=Namhatta Management System
 VITE_ENVIRONMENT=development
+VITE_AUTHENTICATION_ENABLED=true
 ```
 
-### Backend (application-dev.yml):
-```yaml
-server:
-  port: 8080
-  
-spring:
-  profiles:
-    active: dev
-  datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/namhatta}
-    username: ${DB_USERNAME:admin}
-    password: ${DB_PASSWORD:password}
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    
-logging:
-  level:
-    com.namhatta: DEBUG
-    org.springframework.web: DEBUG
+## Development Workflow
+
+### 1. Initial Setup
+```bash
+# Install dependencies
+npm install
+cd client && npm install && cd ..
+
+# Build Spring Boot
+mvn clean compile
+
+# Start development
+./start-fullstack.sh
 ```
 
----
+### 2. Daily Development
+```bash
+# Quick start (if dependencies already installed)
+./start-fullstack.sh
+```
 
-## Recommended Development Flow
+### 3. Database Setup
+1. Configure PostgreSQL connection in `.env.local`
+2. Run database migrations (if any)
+3. Seed initial data
 
-1. **Start Backend First:**
-   ```bash
-   ./run-spring-boot.sh
-   ```
-   Wait for "Started Application" message
+## Script Details
 
-2. **Start Frontend:**
-   ```bash
-   cd client && npm run dev
-   ```
+### start-fullstack.sh
+- Automatically installs missing dependencies
+- Builds Spring Boot application if needed
+- Starts both services with proper process management
+- Configures service restarts on file changes
+- Shows colored output for easy debugging
 
-3. **Verify Connection:**
-   - Frontend: http://localhost:3000
-   - Backend Health: http://localhost:8080/actuator/health
-   - API Test: http://localhost:8080/api/auth/login
+### start-frontend.sh
+- Starts Vite development server on port 3000
+- Enables hot module replacement
+- Proxies API calls to backend (if running)
+- Provides development tools and error overlays
 
----
+### run-spring-boot.sh  
+- Compiles Java sources
+- Starts Spring Boot application on port 8080
+- Enables auto-restart on Java file changes
+- Configures development profile
 
-## Which Option Should You Choose?
+## Development Features
 
-**Choose Option 1 (Concurrent)** if:
-- You want simplicity and automation
-- Working on full-stack features
-- Don't need fine-grained control
+### Hot Reloading
+- **Frontend**: Instant updates on save
+- **Backend**: Automatic restart on Java changes
+- **Database**: Schema updates with JPA
 
-**Choose Option 2 (Separate Terminals)** if:
-- You need to debug specific services
-- Working on frontend or backend only
-- Want maximum control and visibility
+### Debugging
+- **Frontend**: React DevTools, Vite error overlay
+- **Backend**: Spring Boot DevTools, detailed logging
+- **API**: Swagger UI for endpoint testing
 
-**Choose Option 3 (Replit Workflows)** if:
-- You prefer Replit's native tools
-- Working in teams
-- Want integrated monitoring
+### Testing
+- **Frontend**: Vitest for unit/component tests
+- **Backend**: JUnit 5 for unit/integration tests
+- **API**: Postman/curl for endpoint testing
 
-**Choose Option 4 (Docker)** if:
-- You need production-like environment
-- Working with multiple developers
-- Want consistent environment across machines
+## Port Configuration
+
+### Default Ports
+- **3000**: React development server
+- **8080**: Spring Boot application
+- **5432**: PostgreSQL database (if local)
+
+### Port Conflicts
+If ports are busy, scripts will:
+1. Kill existing processes on those ports
+2. Start services on available ports
+3. Update proxy configuration automatically
+
+## Performance Optimization
+
+### Development Mode
+- Fast rebuilds with Vite
+- Incremental compilation with Maven
+- Hot reloading for instant feedback
+- Source maps for debugging
+
+### Production Build
+```bash
+# Frontend build
+cd client && npm run build
+
+# Backend build
+mvn clean package
+
+# Run production
+java -jar target/namhatta-management-system-1.0.0.jar
+```
+
+## Troubleshooting
+
+### Common Issues
+
+#### Java Version
+```bash
+# Check Java version (needs 17+)
+java -version
+
+# Install Java 17 if needed
+# Replit provides this automatically
+```
+
+#### Node.js Dependencies
+```bash
+# Clear cache and reinstall
+rm -rf node_modules client/node_modules
+npm install
+cd client && npm install
+```
+
+#### Database Connection
+```bash
+# Check database status
+curl http://localhost:8080/actuator/health
+
+# Verify connection string in .env.local
+DATABASE_URL=jdbc:postgresql://...
+```
+
+#### Port Conflicts
+```bash
+# Kill processes on specific ports
+sudo lsof -ti:3000 | xargs kill -9
+sudo lsof -ti:8080 | xargs kill -9
+```
+
+### Debug Logs
+
+#### Frontend Logs
+- Vite development server logs
+- Browser console errors
+- Network tab for API calls
+
+#### Backend Logs  
+- Spring Boot startup logs
+- Application logs in console
+- JPA SQL queries (if enabled)
+
+## IDE Configuration
+
+### VS Code
+Recommended extensions:
+- Java Extension Pack
+- React snippets
+- Tailwind CSS IntelliSense
+- Spring Boot Tools
+
+### IntelliJ IDEA
+- Import as Maven project
+- Enable Spring Boot run configuration
+- Configure hot reload settings
+
+## Team Development
+
+### Version Control
+- Use feature branches for development
+- Run tests before pushing
+- Keep database migrations in version control
+
+### Environment Consistency
+- Share .env.example templates
+- Document setup requirements
+- Use same Node.js/Java versions
+
+### Code Standards
+- ESLint for frontend code
+- Checkstyle for backend code
+- Prettier for formatting
+
+## Production Deployment
+
+### Build Process
+```bash
+# Prepare for production
+./prepare-for-import.sh
+
+# Build both services
+npm run build
+mvn clean package
+```
+
+### Deployment Options
+- Replit autoscale deployment
+- Docker containers
+- Traditional server deployment
+
+This setup ensures consistent development experience across different environments and team members.
