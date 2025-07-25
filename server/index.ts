@@ -137,29 +137,36 @@ app.get('*', (req, res) => {
     return;
   }
   
-  // For frontend requests, send a simple HTML page for now
-  res.send(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Namhatta Management System</title>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-    </head>
-    <body>
-      <div id="root">
-        <h1>🕉️ Namhatta Management System</h1>
-        <p>✅ Backend server is running successfully!</p>
-        <p>📍 API Health Check: <a href="/health">/health</a></p>
-        <p>🔑 Demo Login: username: <code>admin</code>, password: <code>Admin@123456</code></p>
-        <p>📊 Dashboard: <a href="/api/dashboard">/api/dashboard</a></p>
-        <p>👥 Devotees: <a href="/api/devotees">/api/devotees</a></p>
-        <p>🏛️ Namhattas: <a href="/api/namhattas">/api/namhattas</a></p>
-        <p><em>Frontend will be served from here once built.</em></p>
-      </div>
-    </body>
-    </html>
-  `);
+  // Serve the built React app
+  const indexPath = join(__dirname, '..', 'dist', 'public', 'index.html');
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('Error serving index.html:', err);
+      // Fallback to simple HTML if built files don't exist
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Namhatta Management System</title>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+        </head>
+        <body>
+          <div id="root">
+            <h1>🕉️ Namhatta Management System</h1>
+            <p>✅ Backend server is running successfully!</p>
+            <p>❌ Frontend build not found. Run: <code>vite build</code></p>
+            <p>📍 API Health Check: <a href="/health">/health</a></p>
+            <p>🔑 Demo Login: username: <code>admin</code>, password: <code>Admin@123456</code></p>
+            <p>📊 Dashboard: <a href="/api/dashboard">/api/dashboard</a></p>
+            <p>👥 Devotees: <a href="/api/devotees">/api/devotees</a></p>
+            <p>🏛️ Namhattas: <a href="/api/namhattas">/api/namhattas</a></p>
+          </div>
+        </body>
+        </html>
+      `);
+    }
+  });
 });
 
 app.listen(PORT, '0.0.0.0', () => {
