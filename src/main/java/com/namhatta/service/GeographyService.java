@@ -181,4 +181,104 @@ public class GeographyService {
         
         return result;
     }
+
+    /**
+     * Get country-wise namhatta counts for map visualization
+     */
+    public List<Map<String, Object>> getCountryMapData() {
+        log.debug("Fetching country map data");
+        try {
+            List<Object[]> results = addressRepository.getCountryWiseNamhattaCounts();
+            return results.stream()
+                    .map(row -> Map.of(
+                            "name", row[0] != null ? row[0].toString() : "Unknown",
+                            "count", row[1] != null ? ((Number) row[1]).intValue() : 0,
+                            "coordinates", Arrays.asList(0.0, 0.0) // Default coordinates
+                    ))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error fetching country map data", e);
+            return List.of();
+        }
+    }
+    
+    /**
+     * Get state-wise namhatta counts for map visualization
+     */
+    public List<Map<String, Object>> getStateMapData(String country) {
+        log.debug("Fetching state map data for country: {}", country);
+        try {
+            List<Object[]> results = addressRepository.getStateWiseNamhattaCounts(country);
+            return results.stream()
+                    .map(row -> Map.of(
+                            "name", row[0] != null ? row[0].toString() : "Unknown",
+                            "count", row[1] != null ? ((Number) row[1]).intValue() : 0,
+                            "coordinates", Arrays.asList(0.0, 0.0) // Default coordinates
+                    ))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error fetching state map data", e);
+            return List.of();
+        }
+    }
+    
+    /**
+     * Get district-wise namhatta counts for map visualization
+     */
+    public List<Map<String, Object>> getDistrictMapData(String state) {
+        log.debug("Fetching district map data for state: {}", state);
+        try {
+            List<Object[]> results = addressRepository.getDistrictWiseNamhattaCounts(state);
+            return results.stream()
+                    .map(row -> Map.of(
+                            "name", row[0] != null ? row[0].toString() : "Unknown",
+                            "count", row[1] != null ? ((Number) row[1]).intValue() : 0,
+                            "coordinates", Arrays.asList(0.0, 0.0) // Default coordinates
+                    ))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error fetching district map data", e);
+            return List.of();
+        }
+    }
+    
+    /**
+     * Get sub-district-wise namhatta counts for map visualization
+     */
+    public List<Map<String, Object>> getSubDistrictMapData(String district) {
+        log.debug("Fetching sub-district map data for district: {}", district);
+        try {
+            List<Object[]> results = addressRepository.getSubDistrictWiseNamhattaCounts(district);
+            return results.stream()
+                    .map(row -> Map.of(
+                            "name", row[0] != null ? row[0].toString() : "Unknown",
+                            "count", row[1] != null ? ((Number) row[1]).intValue() : 0,
+                            "coordinates", Arrays.asList(0.0, 0.0) // Default coordinates
+                    ))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error fetching sub-district map data", e);
+            return List.of();
+        }
+    }
+    
+    /**
+     * Get village-wise namhatta counts for map visualization
+     */
+    public List<Map<String, Object>> getVillageMapData(String subDistrict) {
+        log.debug("Fetching village map data for sub-district: {}", subDistrict);
+        try {
+            List<Object[]> results = addressRepository.getVillageWiseNamhattaCounts(subDistrict);
+            return results.stream()
+                    .map(row -> Map.of(
+                            "name", row[0] != null ? row[0].toString() : "Unknown",
+                            "count", row[1] != null ? ((Number) row[1]).intValue() : 0,
+                            "coordinates", Arrays.asList(0.0, 0.0) // Default coordinates
+                    ))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error fetching village map data", e);
+            return List.of();
+        }
+    }
 }

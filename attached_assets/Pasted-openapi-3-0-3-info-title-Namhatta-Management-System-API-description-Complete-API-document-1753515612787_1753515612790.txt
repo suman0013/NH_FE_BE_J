@@ -1,0 +1,1441 @@
+openapi: 3.0.3
+info:
+  title: Namhatta Management System API
+  description: Complete API documentation for Namhatta Management System - analyzed from live codebase
+  version: 1.0.0
+  contact:
+    name: Namhatta Management System
+    email: support@namhatta.org
+
+servers:
+  - url: http://localhost:5000
+    description: Development server (Node.js)
+  - url: http://localhost:8080
+    description: Spring Boot development server
+  - url: https://api.namhatta.org
+    description: Production server
+
+security:
+  - cookieAuth: []
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: auth_token
+
+  schemas:
+    # Authentication Schemas
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: "admin"
+        password:
+          type: string
+          example: "Admin@123456"
+
+    LoginResponse:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            username:
+              type: string
+              example: "admin"
+            role:
+              type: string
+              enum: [ADMIN, OFFICE, DISTRICT_SUPERVISOR]
+              example: "ADMIN"
+            districts:
+              type: array
+              items:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: "321"
+                  name:
+                    type: string
+                    example: "Purulia"
+
+    # Core Entity Schemas
+    Devotee:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        legalName:
+          type: string
+          example: "John Doe"
+        name:
+          type: string
+          example: "Radha Krishna Das"
+        dob:
+          type: string
+          example: "1990-05-15"
+        phone:
+          type: string
+          example: "+91-9876543210"
+        email:
+          type: string
+          example: "john.doe@example.com"
+        fatherName:
+          type: string
+        motherName:
+          type: string
+        husbandName:
+          type: string
+        gender:
+          type: string
+          enum: [MALE, FEMALE, OTHER]
+        bloodGroup:
+          type: string
+        maritalStatus:
+          type: string
+          enum: [MARRIED, UNMARRIED, WIDOWED]
+        devotionalStatusId:
+          type: integer
+        namhattaId:
+          type: integer
+        gurudevHarinam:
+          type: integer
+        gurudevPancharatrik:
+          type: integer
+        harinamInitiationGurudev:
+          type: string
+        pancharatrikInitiationGurudev:
+          type: string
+        initiatedName:
+          type: string
+        harinamDate:
+          type: string
+        pancharatrikDate:
+          type: string
+        education:
+          type: string
+        occupation:
+          type: string
+        devotionalCourses:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              date:
+                type: string
+              institute:
+                type: string
+        additionalComments:
+          type: string
+        shraddhakutirId:
+          type: integer
+        presentAddress:
+          $ref: '#/components/schemas/Address'
+        permanentAddress:
+          $ref: '#/components/schemas/Address'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateDevoteeRequest:
+      type: object
+      required:
+        - legalName
+        - presentAddress
+        - permanentAddress
+      properties:
+        legalName:
+          type: string
+        name:
+          type: string
+        dob:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        fatherName:
+          type: string
+        motherName:
+          type: string
+        husbandName:
+          type: string
+        gender:
+          type: string
+        bloodGroup:
+          type: string
+        maritalStatus:
+          type: string
+        devotionalStatusId:
+          type: integer
+        namhattaId:
+          type: integer
+        gurudevHarinam:
+          type: integer
+        gurudevPancharatrik:
+          type: integer
+        harinamInitiationGurudev:
+          type: string
+        pancharatrikInitiationGurudev:
+          type: string
+        initiatedName:
+          type: string
+        harinamDate:
+          type: string
+        pancharatrikDate:
+          type: string
+        education:
+          type: string
+        occupation:
+          type: string
+        devotionalCourses:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              date:
+                type: string
+              institute:
+                type: string
+        additionalComments:
+          type: string
+        shraddhakutirId:
+          type: integer
+        presentAddress:
+          $ref: '#/components/schemas/AddressInput'
+        permanentAddress:
+          $ref: '#/components/schemas/AddressInput'
+
+    Namhatta:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        name:
+          type: string
+        meetingDay:
+          type: string
+        meetingTime:
+          type: string
+        malaSenapoti:
+          type: string
+        mahaChakraSenapoti:
+          type: string
+        chakraSenapoti:
+          type: string
+        upaChakraSenapoti:
+          type: string
+        secretary:
+          type: string
+        status:
+          type: string
+          enum: [PENDING_APPROVAL, APPROVED, REJECTED]
+        address:
+          $ref: '#/components/schemas/Address'
+        devoteeCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateNamhattaRequest:
+      type: object
+      required:
+        - code
+        - name
+        - secretary
+        - address
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        meetingDay:
+          type: string
+        meetingTime:
+          type: string
+        malaSenapoti:
+          type: string
+        mahaChakraSenapoti:
+          type: string
+        chakraSenapoti:
+          type: string
+        upaChakraSenapoti:
+          type: string
+        secretary:
+          type: string
+        address:
+          $ref: '#/components/schemas/AddressInput'
+
+    Address:
+      type: object
+      properties:
+        country:
+          type: string
+          example: "India"
+        state:
+          type: string
+          example: "West Bengal"
+        district:
+          type: string
+          example: "Kolkata"
+        subDistrict:
+          type: string
+          example: "Salt Lake"
+        village:
+          type: string
+          example: "Sector V"
+        postalCode:
+          type: string
+          example: "700091"
+        landmark:
+          type: string
+          example: "Near City Centre Mall"
+
+    AddressInput:
+      type: object
+      required:
+        - country
+        - state
+        - district
+        - subDistrict
+        - village
+        - postalCode
+      properties:
+        country:
+          type: string
+        state:
+          type: string
+        district:
+          type: string
+        subDistrict:
+          type: string
+        village:
+          type: string
+        postalCode:
+          type: string
+        landmark:
+          type: string
+
+    DevotionalStatus:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    Shraddhakutir:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        districtCode:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    NamhattaUpdate:
+      type: object
+      properties:
+        id:
+          type: integer
+        namhattaId:
+          type: integer
+        programType:
+          type: string
+        date:
+          type: string
+        attendance:
+          type: integer
+        prasadDistribution:
+          type: integer
+        nagarKirtan:
+          type: integer
+          enum: [0, 1]
+        bookDistribution:
+          type: integer
+          enum: [0, 1]
+        chanting:
+          type: integer
+          enum: [0, 1]
+        arati:
+          type: integer
+          enum: [0, 1]
+        bhagwatPath:
+          type: integer
+          enum: [0, 1]
+        imageUrls:
+          type: array
+          items:
+            type: string
+        facebookLink:
+          type: string
+        youtubeLink:
+          type: string
+        specialAttraction:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    Leader:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        role:
+          type: string
+        reportingTo:
+          type: integer
+        location:
+          type: object
+          properties:
+            country:
+              type: string
+            state:
+              type: string
+            district:
+              type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    StatusHistory:
+      type: object
+      properties:
+        id:
+          type: integer
+        devoteeId:
+          type: integer
+        previousStatus:
+          type: string
+        newStatus:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        comment:
+          type: string
+
+    # Response Schemas
+    PaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items: {}
+        pagination:
+          type: object
+          properties:
+            currentPage:
+              type: integer
+            totalPages:
+              type: integer
+            totalItems:
+              type: integer
+            itemsPerPage:
+              type: integer
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalDevotees:
+          type: integer
+        totalNamhattas:
+          type: integer
+        recentUpdates:
+          type: array
+          items:
+            $ref: '#/components/schemas/NamhattaUpdate'
+
+    StatusDistribution:
+      type: array
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+          count:
+            type: integer
+          percentage:
+            type: number
+
+    MapData:
+      type: array
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+          count:
+            type: integer
+          coordinates:
+            type: array
+            items:
+              type: number
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+paths:
+  # Authentication Endpoints
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          headers:
+            Set-Cookie:
+              description: HTTP-only authentication cookie
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: User logout
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /api/auth/verify:
+    get:
+      tags:
+        - Authentication
+      summary: Verify authentication token
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Token valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Token invalid or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/user-districts:
+    get:
+      tags:
+        - Authentication
+      summary: Get user's assigned districts
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: User districts retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  districts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                        name:
+                          type: string
+
+  # Development Endpoints (development only)
+  /api/auth/dev/status:
+    get:
+      tags:
+        - Development
+      summary: Get authentication status (dev only)
+      responses:
+        '200':
+          description: Auth status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authEnabled:
+                    type: string
+                  environment:
+                    type: string
+                  devMode:
+                    type: boolean
+
+  /api/dev/users:
+    get:
+      tags:
+        - Development
+      summary: Get test users info (dev only)
+      responses:
+        '200':
+          description: Test users info
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # Health & About
+  /api/health:
+    get:
+      tags:
+        - System
+      summary: Health check
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "OK"
+
+  /api/about:
+    get:
+      tags:
+        - System
+      summary: Get application info
+      responses:
+        '200':
+          description: Application information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  version:
+                    type: string
+                  description:
+                    type: string
+
+  # Geography Endpoints
+  /api/countries:
+    get:
+      tags:
+        - Geography
+      summary: Get all countries
+      responses:
+        '200':
+          description: Countries list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /api/states:
+    get:
+      tags:
+        - Geography
+      summary: Get states by country
+      parameters:
+        - name: country
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: States list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /api/districts:
+    get:
+      tags:
+        - Geography
+      summary: Get districts by state
+      parameters:
+        - name: state
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Districts list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /api/sub-districts:
+    get:
+      tags:
+        - Geography
+      summary: Get sub-districts by district and pincode
+      parameters:
+        - name: district
+          in: query
+          schema:
+            type: string
+        - name: pincode
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Sub-districts list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /api/villages:
+    get:
+      tags:
+        - Geography
+      summary: Get villages by sub-district and pincode
+      parameters:
+        - name: subDistrict
+          in: query
+          schema:
+            type: string
+        - name: pincode
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Villages list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /api/pincodes:
+    get:
+      tags:
+        - Geography
+      summary: Get pincodes by location
+      parameters:
+        - name: village
+          in: query
+          schema:
+            type: string
+        - name: district
+          in: query
+          schema:
+            type: string
+        - name: subDistrict
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Pincodes list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /api/pincodes/search:
+    get:
+      tags:
+        - Geography
+      summary: Search pincodes
+      parameters:
+        - name: country
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 25
+      responses:
+        '200':
+          description: Paginated pincodes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: string
+                  hasMore:
+                    type: boolean
+
+  /api/address-by-pincode:
+    get:
+      tags:
+        - Geography
+      summary: Get address info by pincode
+      parameters:
+        - name: pincode
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Address information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+
+  # Map Data Endpoints
+  /api/map/countries:
+    get:
+      tags:
+        - Map Data
+      summary: Get namhatta counts by country
+      responses:
+        '200':
+          description: Country-wise namhatta counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapData'
+
+  /api/map/states:
+    get:
+      tags:
+        - Map Data
+      summary: Get namhatta counts by state
+      responses:
+        '200':
+          description: State-wise namhatta counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapData'
+
+  /api/map/districts:
+    get:
+      tags:
+        - Map Data
+      summary: Get namhatta counts by district
+      responses:
+        '200':
+          description: District-wise namhatta counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapData'
+
+  /api/map/sub-districts:
+    get:
+      tags:
+        - Map Data
+      summary: Get namhatta counts by sub-district
+      responses:
+        '200':
+          description: Sub-district-wise namhatta counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapData'
+
+  /api/map/villages:
+    get:
+      tags:
+        - Map Data
+      summary: Get namhatta counts by village
+      responses:
+        '200':
+          description: Village-wise namhatta counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapData'
+
+  # Dashboard Endpoints
+  /api/dashboard:
+    get:
+      tags:
+        - Dashboard
+      summary: Get dashboard summary
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardSummary'
+
+  /api/status-distribution:
+    get:
+      tags:
+        - Dashboard
+      summary: Get devotional status distribution
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Status distribution
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusDistribution'
+
+  # Hierarchy Endpoints
+  /api/hierarchy:
+    get:
+      tags:
+        - Hierarchy
+      summary: Get top-level hierarchy
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Leadership hierarchy
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Leader'
+
+  /api/hierarchy/{level}:
+    get:
+      tags:
+        - Hierarchy
+      summary: Get leaders by hierarchy level
+      parameters:
+        - name: level
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [DISTRICT_SUPERVISOR, MALA_SENAPOTI, MAHA_CHAKRA_SENAPOTI, CHAKRA_SENAPOTI, UPA_CHAKRA_SENAPOTI]
+      responses:
+        '200':
+          description: Leaders at specified level
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Leader'
+
+  # Devotee Endpoints
+  /api/devotees:
+    get:
+      tags:
+        - Devotees
+      summary: Get devotees with pagination and filtering
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            default: "name"
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: "asc"
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: country
+          in: query
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: district
+          in: query
+          schema:
+            type: string
+        - name: statusId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated devotees list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Devotee'
+
+    post:
+      tags:
+        - Devotees
+      summary: Create new devotee
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDevoteeRequest'
+      responses:
+        '201':
+          description: Devotee created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Devotee'
+        '400':
+          description: Invalid devotee data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/devotees/{id}:
+    get:
+      tags:
+        - Devotees
+      summary: Get devotee by ID
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Devotee details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Devotee'
+        '404':
+          description: Devotee not found
+
+    put:
+      tags:
+        - Devotees
+      summary: Update devotee
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDevoteeRequest'
+      responses:
+        '200':
+          description: Devotee updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Devotee'
+        '400':
+          description: Invalid devotee data
+        '403':
+          description: Access denied
+        '404':
+          description: Devotee not found
+
+  /api/devotees/{namhattaId}:
+    post:
+      tags:
+        - Devotees
+      summary: Create devotee for specific namhatta
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: namhattaId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDevoteeRequest'
+      responses:
+        '201':
+          description: Devotee created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Devotee'
+
+  /api/devotees/{id}/upgrade-status:
+    post:
+      tags:
+        - Devotees
+      summary: Upgrade devotee status
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - newStatusId
+              properties:
+                newStatusId:
+                  type: integer
+                notes:
+                  type: string
+                allowedDistricts:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Status updated successfully
+        '400':
+          description: Invalid request
+        '403':
+          description: Access denied
+        '404':
+          description: Devotee not found
+
+  /api/devotees/{id}/status-history:
+    get:
+      tags:
+        - Devotees
+      summary: Get devotee status history
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Status history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StatusHistory'
+
+  /api/devotees/{id}/addresses:
+    get:
+      tags:
+        - Devotees
+      summary: Get devotee addresses
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Devotee addresses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  presentAddress:
+                    $ref: '#/components/schemas/Address'
+                  permanentAddress:
+                    $ref: '#/components/schemas/Address'
+
+  # Namhatta Endpoints
+  /api/namhattas:
+    get:
+      tags:
+        - Namhattas
+      summary: Get namhattas with pagination and filtering
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: country
+          in: query
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: district
+          in: query
+          schema:
+            type: string
+        - name: subDistrict
+          in: query
+          schema:
+            type: string
+        - name: village
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING_APPROVAL, APPROVED, REJECTED]
+      responses:
+        '200':
+          description: Paginated namhattas list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Namhatta'
+
+    post:
+      tags:
+        - Namhattas
+      summary: Create new namhatta
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNamhattaRequest'
+      responses:
+        '201':
+          description: Namhatta created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Namhatta'
+        '400':
+          description: Invalid namhatta data
+        '409':
+          description: Namhatta code already exists
+
+  /api/namhattas/pending:
+    get:
+      tags:
+        - Namhattas
+      summary: Get pending approval namhattas
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Pending namhattas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Namhatta'
+
+  /api/namhattas/{id}:
+    get:
+      tags:
+        - Namhattas
+      summary: Get namhatta by ID
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Namhatta details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Namhatta'
+        '404':
+          description: Namhatta not found
+
+    put:
+      tags:
+        - Namhattas
+      summary: Update namhatta
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/Namhatta'
+            schema:
+              $ref: '#/components/schemas/CreateNamhattaRequest'
+      responses:

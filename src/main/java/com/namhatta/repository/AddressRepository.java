@@ -94,4 +94,39 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
     
     // Address lookup by pincode
     List<Address> findByPincode(String pincode);
+    
+    // Map data queries for namhatta counts by geographic regions
+    @Query(value = "SELECT a.country, COUNT(DISTINCT na.namhatta_id) " +
+           "FROM addresses a " +
+           "JOIN namhatta_addresses na ON a.id = na.address_id " +
+           "GROUP BY a.country ORDER BY a.country", nativeQuery = true)
+    List<Object[]> getCountryWiseNamhattaCounts();
+    
+    @Query(value = "SELECT a.state_name_english, COUNT(DISTINCT na.namhatta_id) " +
+           "FROM addresses a " +
+           "JOIN namhatta_addresses na ON a.id = na.address_id " +
+           "WHERE (:country IS NULL OR a.country = :country) " +
+           "GROUP BY a.state_name_english ORDER BY a.state_name_english", nativeQuery = true)
+    List<Object[]> getStateWiseNamhattaCounts(@Param("country") String country);
+    
+    @Query(value = "SELECT a.district_name_english, COUNT(DISTINCT na.namhatta_id) " +
+           "FROM addresses a " +
+           "JOIN namhatta_addresses na ON a.id = na.address_id " +
+           "WHERE (:state IS NULL OR a.state_name_english = :state) " +
+           "GROUP BY a.district_name_english ORDER BY a.district_name_english", nativeQuery = true)
+    List<Object[]> getDistrictWiseNamhattaCounts(@Param("state") String state);
+    
+    @Query(value = "SELECT a.subdistrict_name_english, COUNT(DISTINCT na.namhatta_id) " +
+           "FROM addresses a " +
+           "JOIN namhatta_addresses na ON a.id = na.address_id " +
+           "WHERE (:district IS NULL OR a.district_name_english = :district) " +
+           "GROUP BY a.subdistrict_name_english ORDER BY a.subdistrict_name_english", nativeQuery = true)
+    List<Object[]> getSubDistrictWiseNamhattaCounts(@Param("district") String district);
+    
+    @Query(value = "SELECT a.village_name_english, COUNT(DISTINCT na.namhatta_id) " +
+           "FROM addresses a " +
+           "JOIN namhatta_addresses na ON a.id = na.address_id " +
+           "WHERE (:subDistrict IS NULL OR a.subdistrict_name_english = :subDistrict) " +
+           "GROUP BY a.village_name_english ORDER BY a.village_name_english", nativeQuery = true)
+    List<Object[]> getVillageWiseNamhattaCounts(@Param("subDistrict") String subDistrict);
 }
