@@ -20,5 +20,6 @@ com/namhatta/service/LeaderService.class
 com/namhatta/controller/StatusHistoryGlobalController.class
 com/namhatta/controller/GeographyTestController.class
 com/namhatta/controller/MapDataController.class
+com/namhatta/config/OpenApiConfig.class
 com/namhatta/service/ShraddhakutirService.class
 com/namhatta/repository/StatusHistoryRepository.class

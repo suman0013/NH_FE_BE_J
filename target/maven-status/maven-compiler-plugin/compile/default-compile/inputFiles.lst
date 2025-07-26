@@ -47,6 +47,7 @@
 /home/runner/workspace/src/main/java/com/namhatta/mapper/EntityMapper.java
 /home/runner/workspace/src/main/java/com/namhatta/controller/MapDataController.java
 /home/runner/workspace/src/main/java/com/namhatta/repository/DevotionalStatusRepository.java
+/home/runner/workspace/src/main/java/com/namhatta/config/OpenApiConfig.java
 /home/runner/workspace/src/main/java/com/namhatta/entity/StatusHistory.java
 /home/runner/workspace/src/main/java/com/namhatta/controller/DevotionalStatusController.java
 /home/runner/workspace/src/main/java/com/namhatta/repository/NamhattaRepository.java
