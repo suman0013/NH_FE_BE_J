@@ -7,12 +7,12 @@
  */
 export const getApiBaseUrl = (): string => {
   // Check if we should use external backend
-  if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL;
+  if ((import.meta as any).env?.VITE_API_BASE_URL) {
+    return (import.meta as any).env.VITE_API_BASE_URL;
   }
   
   // In development, connect to Spring Boot backend on port 8080
-  if (import.meta.env.MODE === 'development') {
+  if ((import.meta as any).env?.MODE === 'development') {
     return 'http://localhost:8080';
   }
   
@@ -50,7 +50,7 @@ export const API_CONFIG = {
  * Check if we're running in development mode
  */
 export const isDevelopment = (): boolean => {
-  return import.meta.env.MODE === 'development';
+  return (import.meta as any).env?.MODE === 'development';
 };
 
 /**
@@ -60,7 +60,7 @@ export const logApiConfig = (): void => {
   if (isDevelopment()) {
     console.log('🚀 API Configuration:', {
       baseUrl: getApiBaseUrl(),
-      mode: import.meta.env.MODE,
+      mode: (import.meta as any).env?.MODE,
       isDev: isDevelopment(),
     });
   }

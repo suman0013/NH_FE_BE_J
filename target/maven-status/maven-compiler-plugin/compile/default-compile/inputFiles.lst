@@ -39,8 +39,8 @@
 /home/runner/workspace/src/main/java/com/namhatta/entity/User.java
 /home/runner/workspace/src/main/java/com/namhatta/controller/NamhattaUpdateController.java
 /home/runner/workspace/src/main/java/com/namhatta/controller/AuthController.java
-/home/runner/workspace/src/main/java/com/namhatta/entity/NamhattaUpdate.java
 /home/runner/workspace/src/main/java/com/namhatta/entity/Leader.java
+/home/runner/workspace/src/main/java/com/namhatta/entity/NamhattaUpdate.java
 /home/runner/workspace/src/main/java/com/namhatta/controller/DevoteeController.java
 /home/runner/workspace/src/main/java/com/namhatta/controller/SpaController.java
 /home/runner/workspace/src/main/java/com/namhatta/repository/AddressRepository.java
